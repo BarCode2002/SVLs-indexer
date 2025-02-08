@@ -1,0 +1,24 @@
+spec_version: 3.0
+package: indexer
+
+datasources:
+  tzkt:
+    kind: tezos.tzkt
+    url: https://api.ghostnet.tzkt.io
+
+contracts:
+  tz_svls:
+    kind: tezos
+    address: KT1XYuCPsomANDTajbKFuF4os5tEpsJVDv8r
+    typename: tz_svls
+
+indexes:
+  tz_svls_big_map:
+    kind: tezos.big_maps
+    datasources:
+      - tzkt
+    handlers:
+      - callback: on_change
+        contract: tz_svls
+        path: svls
+    skip_history: never

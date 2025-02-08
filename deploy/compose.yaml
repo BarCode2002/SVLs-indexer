@@ -1,0 +1,36 @@
+name: indexer
+
+services:
+  dipdup:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: always
+    env_file: .env
+    ports:
+      - 46339
+      - 9000
+    command: ["-c", "dipdup.yaml", "-c", "configs/dipdup.compose.yaml", "run"]
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+    restart: always
+    env_file: .env
+    environment:
+      - POSTGRES_USER=dipdup
+      - POSTGRES_DB=dipdup
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dipdup"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db:
