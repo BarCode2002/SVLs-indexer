@@ -10,55 +10,48 @@ async def on_change(
     svls: TezosBigMapDiff[SvlsKey, SvlsValue],
 ) -> None:
     if not svls.key: return
-    svl_id = svls.key.root
+    svl_key = svls.key.root
     owner_address = svls.value.owner
-    owner_vin = svls.value.VIN
-    owner_brand = svls.value.brand
-    owner_model = svls.value.model
-    owner_year = svls.value.year    
-    prev_owners_info = svls.value.prev_owners_info
+    vin = svls.value.VIN
+    brand = svls.value.brand
+    model = svls.value.model
+    year = svls.value.year    
+    requester_address = svls.value.request                                                                    
+    request_accepted = svls.value.acceptRequest
     curr_owner_info = svls.value.curr_owner_info
-    p_i = []
+    prev_owners_info = svls.value.prev_owners_info
+    p_o_i = []
     for o in prev_owners_info:
-        p_i.append({'address': o.address, 'cids': o.list})
-    price = svls.value.price
-    request = svls.value.request                                                                    
-    acceptRequest = svls.value.acceptRequest
-    ctx.logger.info(f"svl_id:{svl_id}")
-    ctx.logger.info(f"Owner VIN:{owner_vin}")
-    ctx.logger.info(f"Owner brand:{owner_brand}")
-    ctx.logger.info(f"Owner model:{owner_model}")
-    ctx.logger.info(f"Owner year:{owner_year}")
-    ctx.logger.info(f"Owner address:{owner_address}")
-    ctx.logger.info(f"Previous owners info:{p_i}")
-    ctx.logger.info(f"Current owner info:{curr_owner_info}")
-    ctx.logger.info(f"Price:{price}")
-    ctx.logger.info(f"Request:{request}")
-    ctx.logger.info(f"Accepted request:{acceptRequest}")
-    ctx.logger.info(svl_id)
-    holder = await models.Holder.get_or_none(id=svl_id)
+        p_o_i.append({'address': o.address, 'cids': o.list})
+    svl_price = svls.value.price
+   
+
+    ctx.logger.info(svl_key)
+    
+    holder = await models.Holder.get_or_none(id=svl_key)
     if holder is None:
         await models.Holder.create(
-            id=svl_id, 
-            address=owner_address,
-            vin=owner_vin,
-            brand=owner_brand,
-            model=owner_model,
-            year=owner_year,
-            prev_owners_info=p_i,
+            svl_key=svl_key, 
+            owner_address=owner_address,
+            vin=vin,
+            brand=brand,
+            model=model,
+            year=year,
+            requester_address=requester_address,
+            request_accepted=request_accepted,
+            prev_owners_info=p_o_i,
             curr_owner_info=curr_owner_info,
-            price=price,
-            request=request,
-            accept_request=acceptRequest
+            svl_price=svl_price,
         )
     else:
-        holder.address = owner_address
-        holder.vin = owner_vin
-        holder.brand = owner_brand
-        holder.model = owner_model
-        holder.year = owner_year
-        holder.prev_owners_info = p_i
+        holder.owner_address = owner_address
+        holder.vin = vin
+        holder.brand = brand
+        holder.model = model
+        holder.year = year
+        holder.requester_address = requester_address
+        holder.request_accepted = request_accepted
         holder.curr_owner_info = curr_owner_info
-        holder.request = request
-        holder.accept_request = acceptRequest
+        holder.prev_owners_info = p_o_i
+        holder.svl_price = svl_price
         await holder.save()
