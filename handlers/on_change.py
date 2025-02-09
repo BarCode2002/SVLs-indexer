@@ -28,7 +28,7 @@ async def on_change(
 
     ctx.logger.info(svl_key)
     
-    holder = await models.Holder.get_or_none(id=svl_key)
+    holder = await models.Holder.get_or_none(svl_key=svl_key)
     if holder is None:
         await models.Holder.create(
             svl_key=svl_key, 
@@ -39,8 +39,8 @@ async def on_change(
             year=year,
             requester_address=requester_address,
             request_accepted=request_accepted,
-            prev_owners_info=p_o_i,
-            curr_owner_info=curr_owner_info,
+            current_owner_info=curr_owner_info,
+            previous_owners_info=p_o_i,
             svl_price=svl_price,
         )
     else:
@@ -51,7 +51,7 @@ async def on_change(
         holder.year = year
         holder.requester_address = requester_address
         holder.request_accepted = request_accepted
-        holder.curr_owner_info = curr_owner_info
-        holder.prev_owners_info = p_o_i
+        holder.current_owner_info = curr_owner_info
+        holder.previous_owners_info = p_o_i
         holder.svl_price = svl_price
         await holder.save()
