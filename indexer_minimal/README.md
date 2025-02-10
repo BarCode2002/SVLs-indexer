@@ -1,4 +1,4 @@
-# indexer
+# indexer_minimal
 
 A blockchain indexer built with DipDup
 

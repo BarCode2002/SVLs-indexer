@@ -1,4 +1,4 @@
-name: indexer
+name: indexer_minimal
 
 services:
   dipdup:
@@ -12,7 +12,7 @@ services:
       - 46339
       - 9000
     volumes:
-      - sqlite:${SQLITE_PATH:-/tmp/indexer.sqlite}
+      - sqlite:${SQLITE_PATH:-/tmp/indexer_minimal.sqlite}
 
 volumes:
   sqlite:

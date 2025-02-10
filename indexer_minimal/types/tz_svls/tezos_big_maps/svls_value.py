@@ -22,21 +22,11 @@ class SvlsValue(BaseModel):
     VIN: str
     acceptRequest: bool
     brand: str
-    climate: str
-    color: str
     curr_owner_info: List[str]
-    engine: str
     first_owner: bool
-    fuel: str
-    horsepower: str
-    kilometers: str
     model: str
     owner: str
     prev_owners_info: List[PrevOwnersInfoItem]
     price: str
     request: str
-    shift: str
-    use: str
-    vehicleSpecificType: str
-    weight: str
     year: str

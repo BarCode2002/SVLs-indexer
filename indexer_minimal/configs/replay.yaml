@@ -5,7 +5,7 @@ spec_version: 3.0
 replay:
   dipdup_version: 8
   template: demo_blank
-  package: indexer
+  package: indexer_minimal
   version: 0.0.1
   description: A blockchain indexer built with DipDup
   license: MIT
