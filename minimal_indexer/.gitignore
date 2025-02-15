@@ -1,11 +1,18 @@
 # Ignore all
 *
+!*/
 
 # Add metadata and build files
-!indexer_minimal
-!pyproject.toml
-!*.lock
-!README.md
+!minimal_indexer
+!.gitignore
+!.dockerignore
+!py.typed
+!**/Dockerfile
+!**/Makefile
+!**/pyproject.toml
+!**/*.lock
+!**/README.md
+!**/.keep
 
 # Add Python code
 !**/*.py
@@ -19,4 +26,4 @@
 !**/*.yaml
 !**/*.yml
 !**/*.j2
-!**/.keep
+!**/*.env.default

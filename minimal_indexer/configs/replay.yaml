@@ -5,14 +5,14 @@ spec_version: 3.0
 replay:
   dipdup_version: 8
   template: demo_blank
-  package: indexer_minimal
+  package: minimal_indexer
   version: 0.0.1
   description: A blockchain indexer built with DipDup
   license: MIT
   name: John Doe
   email: john_doe@example.com
-  postgres_image: postgres:15
+  postgres_image: postgres:16
   postgres_data_path: /var/lib/postgresql/data
   hasura_image: hasura/graphql-engine:latest
   line_length: 120
-  package_manager: pdm
+  package_manager: uv
