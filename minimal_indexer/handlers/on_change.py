@@ -19,7 +19,7 @@ async def on_change(
         prev_owners_info = svls.value.prev_owners_info
         p_o_i = []
         for o in prev_owners_info:
-            #ctx.logger.info(o)
+            #ctx.logger.info(o) http://host.docker.internal:8080/ipfs/
             p_o_i.append({'transferData': o.timestamp, 'address': o.address, 'cids': o.list})
         svl_price = svls.value.price
 
@@ -34,14 +34,17 @@ async def on_change(
             ctx.logger.info(response[0]['brand'])
             ctx.logger.info(response[0]['year'])
             ctx.logger.info(response[0]['kilometers'])
+            brand = response[0]['brand']
+            year = response[0]['model']
+            model = response[0]['year']
             if holder is None:
                 await models.Holder.create(
                     svl_key=svl_key, 
                     owner_address=owner_address,
                     vin=vin,
-                    brand=response[0]['brand'],
-                    model=response[0]['model'],
-                    year=response[0]['year'],
+                    brand=brand,
+                    model=model,
+                    year=year,
                     requester_address=requester_address,
                     request_accepted=request_accepted,
                     current_owner_info=curr_owner_info,
@@ -51,9 +54,9 @@ async def on_change(
             else:
                 holder.owner_address = owner_address
                 holder.vin = vin,
-                holder.brand=response[0]['brand'],
-                holder.model=response[0]['model'],
-                holder.year=response[0]['year'],      
+                holder.brand=brand,
+                holder.model=model,
+                holder.year=year,      
                 holder.requester_address = requester_address
                 holder.request_accepted = request_accepted
                 holder.current_owner_info = curr_owner_info
