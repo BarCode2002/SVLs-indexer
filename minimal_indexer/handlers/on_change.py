@@ -24,42 +24,52 @@ async def on_change(
         svl_price = svls.value.price
 
         holder = await models.Holder.get_or_none(svl_key=svl_key)
-        ctx.logger.info(curr_owner_info[0])
-        brand = 'empty'
-        model = 'empty'
-        year = 'empty'
-        if (curr_owner_info[0] != ''):
+        ctx.logger.info(curr_owner_info[len(curr_owner_info)-1])
+        ctx.logger.info(holder)
+        if (curr_owner_info[len(curr_owner_info)-1] != ''):
             local_ipfs = ctx.get_http_datasource('local_ipfs')
             response = await local_ipfs.request(
                 method='get',
-                url=curr_owner_info[0], 
+                url=curr_owner_info[len(curr_owner_info)-1], 
             )
             ctx.logger.info(response[0]['brand'])
+            ctx.logger.info(response[0]['model'])
             ctx.logger.info(response[0]['year'])
-            ctx.logger.info(response[0]['kilometers'])
             brand=response[0]['brand']
             year=response[0]['model']
             model=response[0]['year']        
-        if holder is None:
-            await models.Holder.create(
-                svl_key=svl_key, 
-                owner_address=owner_address,
-                vin=vin,
-                brand=brand,
-                model=model,
-                year=year,
-                requester_address=requester_address,
-                request_accepted=request_accepted,
-                current_owner_info=curr_owner_info,
-                previous_owners_info=p_o_i,
-                svl_price=svl_price,
-            )
-        else:
+            if holder is None:
+                await models.Holder.create(
+                    svl_key=svl_key, 
+                    owner_address=owner_address,
+                    vin=vin,
+                    brand=brand,
+                    model=model,
+                    year=year,
+                    requester_address=requester_address,
+                    request_accepted=request_accepted,
+                    current_owner_info=curr_owner_info,
+                    previous_owners_info=p_o_i,
+                    svl_price=svl_price,
+                )
+            else:
+                holder.owner_address=owner_address
+                holder.vin=vin
+                holder.brand=brand
+                holder.model=model
+                holder.year=year
+                holder.requester_address=requester_address
+                holder.request_accepted=request_accepted
+                holder.current_owner_info=curr_owner_info
+                holder.previous_owners_info=p_o_i
+                holder.svl_price = svl_price
+                await holder.save()
+        else: #esto solo pasaria cuando el svl acaba de ser transferido. Por la tanto holder ya existe
+             #como no se puede coger la información de ipfs al ser curr_owner_info='' la información
+             #que se coge de ipfs no se actualiza
+             #se actualizara cuando el siguiente propietario edite el svl
             holder.owner_address=owner_address
             holder.vin=vin
-            holder.brand=brand
-            holder.model=model
-            holder.year=year
             holder.requester_address=requester_address
             holder.request_accepted=request_accepted
             holder.current_owner_info=curr_owner_info
@@ -68,8 +78,12 @@ async def on_change(
             await holder.save()
 
 
-
 #ctx.logger.info(len(response[1]['maintenances']))
 #if (len(response[1]['maintenances']) > 0):
 #for i in range(len(response[1]['maintenances'])):
 #ctx.logger.info(len(response[1]['maintenances'][i]['type']))
+
+
+
+#el curr_owner_info[0] es el menos reciente
+#el curr_owner_info[len(curr_owner_info)-1] es el mas reciente
