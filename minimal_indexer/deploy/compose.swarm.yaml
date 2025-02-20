@@ -1,4 +1,4 @@
-name: indexer
+name: minimal_indexer
 
 services:
   dipdup:
@@ -6,7 +6,7 @@ services:
     depends_on:
       - db
       - hasura
-    command: ["-c", "dipdup.yaml", "-c", "configs/dipdup.swarm.yaml", "run"]
+    command: ["-C", "swarm", "run"]
     env_file: .env
     networks:
       - internal
@@ -28,7 +28,7 @@ services:
         tag: "\{\{.Name\}\}.\{\{.ImageID\}\}"
 
   db:
-    image: postgres:15
+    image: postgres:16
     volumes:
       - db:/var/lib/postgresql/data
     env_file: .env
@@ -54,7 +54,7 @@ services:
     depends_on:
       - db
     environment:
-      - HASURA_GRAPHQL_DATABASE_URL=postgres://dipdup:${POSTGRES_PASSWORD}@indexer_db:5432/dipdup
+      - HASURA_GRAPHQL_DATABASE_URL=postgres://dipdup:${POSTGRES_PASSWORD}@minimal_indexer_db:5432/dipdup
       - HASURA_GRAPHQL_ADMIN_SECRET=${HASURA_SECRET}
       - HASURA_GRAPHQL_ENABLE_CONSOLE=true
       - HASURA_GRAPHQL_DEV_MODE=false

@@ -1,4 +1,4 @@
-# indexer
+# minimal_indexer
 
 A blockchain indexer built with DipDup
 
@@ -25,16 +25,15 @@ dipdup run
 Store data in SQLite database (defaults to /tmp, set `SQLITE_PATH` env variable):
 
 ```shell
-dipdup -c . -c configs/dipdup.sqlite.yaml run
+dipdup -C sqlite run
 ```
 
 Or spawn a Compose stack with PostgreSQL and Hasura:
 
 ```shell
-cd deploy
-cp .env.default .env
+cp deploy/.env.default deploy/.env
 # Edit .env file before running
-docker-compose up
+make up
 ```
 
 ## Development setup
@@ -42,8 +41,8 @@ docker-compose up
 To set up the development environment:
 
 ```shell
-pdm install
-$(pdm venv activate)
+make install
+source .venv/bin/activate
 ```
 
 Run `make all` to run full CI check or `make help` to see other available commands.

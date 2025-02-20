@@ -1,19 +1,22 @@
 spec_version: 3.0
-package: indexer
+package: minimal_indexer
 
 datasources:
   tzkt:
     kind: tezos.tzkt
     url: https://api.ghostnet.tzkt.io
+  local_ipfs:
+    kind: http
+    url: http://host.docker.internal:8080/ipfs/
 
 contracts:
   tz_svls:
     kind: tezos
-    address: KT1XYuCPsomANDTajbKFuF4os5tEpsJVDv8r
+    address: KT1GsM9dQZJSYTDG4ko7X7KfVbBwxNq9p6x6
     typename: tz_svls
 
 indexes:
-  tz_svls_big_map:
+  tz_svls_bigmap:
     kind: tezos.big_maps
     datasources:
       - tzkt
@@ -21,4 +24,4 @@ indexes:
       - callback: on_change
         contract: tz_svls
         path: svls
-    skip_history: never
+    skip_history: always
