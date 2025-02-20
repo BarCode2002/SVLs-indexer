@@ -3,7 +3,9 @@ from dipdup.models.tezos import TezosBigMapDiff
 from dipdup_indexer import models as models
 from dipdup_indexer.types.tz_svls.tezos_big_maps.svls_key import SvlsKey
 from dipdup_indexer.types.tz_svls.tezos_big_maps.svls_value import SvlsValue
-
+import gzip
+import json
+from io import BytesIO
 
 async def on_change(
     ctx: HandlerContext,
@@ -30,9 +32,12 @@ async def on_change(
                 method='get',
                 url=curr_owner_info[len(curr_owner_info)-1], 
             )
-            brand=response[0]['brand']
-            year=response[0]['model']
-            model=response[0]['year']        
+            with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
+                json_data = json.load(gz_file)
+            ctx.logger.info(json_data)
+            brand=json_data[0]['brand']
+            year=json_data[0]['model']
+            model=json_data[0]['year']        
             if holder is None:
                 await models.Holder.create(
                     svl_key=svl_key, 
