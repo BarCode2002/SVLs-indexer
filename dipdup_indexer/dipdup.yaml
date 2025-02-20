@@ -1,5 +1,5 @@
 spec_version: 3.0
-package: minimal_indexer
+package: dipdup_indexer
 
 datasources:
   tzkt:
@@ -12,7 +12,7 @@ datasources:
 contracts:
   tz_svls:
     kind: tezos
-    address: KT1GsM9dQZJSYTDG4ko7X7KfVbBwxNq9p6x6
+    address: KT1PDGYFMWbFBoAM5niufD3kq3m9B3YE6M8T
     typename: tz_svls
 
 indexes:

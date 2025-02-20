@@ -1,8 +1,8 @@
 from dipdup.context import HandlerContext
 from dipdup.models.tezos import TezosBigMapDiff
-from minimal_indexer import models as models
-from minimal_indexer.types.tz_svls.tezos_big_maps.svls_key import SvlsKey
-from minimal_indexer.types.tz_svls.tezos_big_maps.svls_value import SvlsValue
+from dipdup_indexer import models as models
+from dipdup_indexer.types.tz_svls.tezos_big_maps.svls_key import SvlsKey
+from dipdup_indexer.types.tz_svls.tezos_big_maps.svls_value import SvlsValue
 
 
 async def on_change(
@@ -19,7 +19,7 @@ async def on_change(
         prev_owners_info=svls.value.prev_owners_info
         p_o_i = []
         for o in prev_owners_info:
-            p_o_i.append({'transferData': o.timestamp, 'address': o.address, 'cids': o.list})
+            p_o_i.append({'transferDate': o.timestamp, 'address': o.address, 'cids': o.list})
         svl_price = svls.value.price
 
         holder = await models.Holder.get_or_none(svl_key=svl_key)

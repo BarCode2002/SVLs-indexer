@@ -5,7 +5,7 @@ database:
   user: ${POSTGRES_USER:-dipdup}
   password: ${POSTGRES_PASSWORD:-changeme}
   database: ${POSTGRES_DB:-dipdup}
-  
+
 sentry:
   dsn: ${SENTRY_DSN:-''}
   environment: ${SENTRY_ENVIRONMENT:-''}

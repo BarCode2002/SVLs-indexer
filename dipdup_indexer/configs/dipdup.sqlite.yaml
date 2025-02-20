@@ -1,6 +1,6 @@
 database:
   kind: sqlite
-  path: ${SQLITE_PATH:-/tmp/minimal_indexer.sqlite}
+  path: ${SQLITE_PATH:-/tmp/dipdup_indexer.sqlite}
 
 sentry:
   dsn: ${SENTRY_DSN:-''}
