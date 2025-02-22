@@ -5,9 +5,6 @@ datasources:
   tzkt:
     kind: tezos.tzkt
     url: https://api.ghostnet.tzkt.io
-  local_ipfs:
-    kind: http
-    url: http://host.docker.internal:8080/ipfs/
 
 contracts:
   tz_svls:

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dipdup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: dipdup
+  template:
+    metadata:
+      labels:
+        io.kompose.service: dipdup
+    spec:
+      containers:
+        - args:
+            - -C
+            - compose
+            - run
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: env
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_HOST
+                  name: env
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: env
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_USER
+                  name: env
+          image: barcode11/indexer:latest
+          name: dipdup
+          ports:
+            - containerPort: 46339
+            - containerPort: 9000
+      restartPolicy: Always
