@@ -36,8 +36,8 @@ async def on_change(
                 json_data = json.load(gz_file)
             ctx.logger.info(json_data)
             brand=json_data[0]['brand']
-            year=json_data[0]['model']
-            model=json_data[0]['year']        
+            model=json_data[0]['model']    
+            year=json_data[0]['year']
             if holder is None:
                 await models.Holder.create(
                     svl_key=svl_key, 
