@@ -7,3 +7,4 @@ data:
   POSTGRES_HOST: db
   POSTGRES_PASSWORD: pepe11
   POSTGRES_USER: dipdup
+  MONGO_URI: "mongodb://user:pepe@mongo-service:27017/miscellaniousDB"
