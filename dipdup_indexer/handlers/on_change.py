@@ -28,16 +28,23 @@ async def on_change(
 
         if (curr_owner_info[len(curr_owner_info)-1] != ''):
             local_ipfs = ctx.get_http_datasource('local_ipfs')
-            response = await local_ipfs.request(
-                method='get',
-                url=curr_owner_info[len(curr_owner_info)-1], 
-            )
-            with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
-                json_data = json.load(gz_file)
-            ctx.logger.info(json_data)
-            brand=json_data[0]['brand']
-            model=json_data[0]['model']    
-            year=json_data[0]['year']
+            try: 
+                response = await local_ipfs.request(
+                    method='get',
+                    url=curr_owner_info[len(curr_owner_info)-1], 
+                    timeout=1,
+                )
+                with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
+                    json_data = json.load(gz_file)
+                ctx.logger.info(json_data)
+                brand=json_data[0]['brand']
+                model=json_data[0]['model']    
+                year=json_data[0]['year']
+            except Exception as e:
+                ctx.logger.info(f"CID not valid: {e}")
+                brand = ''
+                model = ''
+                year = ''
             if holder is None:
                 await models.Holder.create(
                     svl_key=svl_key, 
