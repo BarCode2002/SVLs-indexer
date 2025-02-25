@@ -1,28 +1,26 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: db-pv
+  name: postgres-pv
 spec:
   capacity:
     storage: 5Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs
   nfs:
-    path: /Users/barcode/nfsIndexer
-    server: 192.168.49.1
+    path: "/Users/barcode/nfsIndexer"
+    server: host.docker.internal
 
 ---
 
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: db
+  name: postgres-pvc
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 5Gi
-  storageClassName: nfs
