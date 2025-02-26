@@ -3,6 +3,5 @@ kind: ConfigMap
 metadata:
   name: postgres-configmap
 data:
-  POSTGRES_DB: dipdup
-  POSTGRES_HOST: postgres-svc
-  POSTGRES_USER: dipdup
+  POSTGRES_DB: postgres
+  POSTGRES_HOST: postgres-indexer.c5ue2amuynf2.eu-west-3.rds.amazonaws.com

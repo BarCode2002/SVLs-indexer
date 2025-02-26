@@ -35,9 +35,9 @@ spec:
                   name: postgres-secret
             - name: POSTGRES_USER
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   key: POSTGRES_USER
-                  name: postgres-configmap
+                  name: postgres-secret
           image: barcode11/indexer:latest
           name: dipdup-container
           ports:
