@@ -11,10 +11,9 @@ async def on_change(
     ctx: HandlerContext,
     svls: TezosBigMapDiff[SvlsKey, SvlsValue],
 ) -> None:
-        if not svls.key: return
         svl_key=svls.key.root
+
         owner_address=svls.value.owner
-        vin=svls.value.VIN  
         requester_address=svls.value.request                                                                    
         request_accepted=svls.value.acceptRequest
         curr_owner_info=svls.value.curr_owner_info
@@ -25,7 +24,7 @@ async def on_change(
         svl_price = svls.value.price
 
         holder = await models.Holder.get_or_none(svl_key=svl_key)
-
+        
         if (curr_owner_info[len(curr_owner_info)-1] != ''):
             local_ipfs = ctx.get_http_datasource('local_ipfs')
             try: 
@@ -37,14 +36,16 @@ async def on_change(
                 with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
                     json_data = json.load(gz_file)
                 ctx.logger.info(json_data)
+                vin=json_data[0]['vin']
                 brand=json_data[0]['brand']
                 model=json_data[0]['model']    
                 year=json_data[0]['year']
             except Exception as e:
-                ctx.logger.info(f"CID not valid: {e}")
-                brand = ''
-                model = ''
-                year = ''
+                ctx.logger.info(f"CID not found: {e}")
+                vin=''
+                brand=''
+                model=''
+                year=''
             if holder is None:
                 await models.Holder.create(
                     svl_key=svl_key, 
@@ -73,7 +74,6 @@ async def on_change(
                 await holder.save()
         else:
             holder.owner_address=owner_address
-            holder.vin=vin
             holder.requester_address=requester_address
             holder.request_accepted=request_accepted
             holder.current_owner_info=curr_owner_info
