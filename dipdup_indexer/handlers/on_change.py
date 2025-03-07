@@ -24,7 +24,11 @@ async def on_change(
         num_owners=0
         num_maintenances=0
         num_modifications=0
-        num_defects=0
+        num_cosmetic_defects=0
+        num_minor_defects=0
+        num_moderate_defects=0
+        num_important_defects=0
+        num_critical_defects=0
         num_repairs=0
         local_ipfs = ctx.get_http_datasource('local_ipfs')
         if (curr_owner_info[0] != ''): 
@@ -40,7 +44,12 @@ async def on_change(
                         json_data = json.load(gz_file)
                     num_maintenances+=len(json_data[1]['maintenances'])
                     num_modifications+=len(json_data[2]['modifications'])
-                    num_defects+=len(json_data[3]['defects'])
+                    for i in range(len(json_data[3]['defects'])):
+                        if json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
+                        elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.minor': num_minor_defects+=1
+                        elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.moderate': num_moderate_defects+=1
+                        elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.important': num_important_defects+=1
+                        elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.critical': num_critical_defects+=1
                     num_repairs+=len(json_data[4]['repairs'])
                 except Exception as e:
                     ctx.logger.info(f"CID not found: {e}")
@@ -58,7 +67,12 @@ async def on_change(
                             json_data = json.load(gz_file)
                         num_maintenances+=len(json_data[1]['maintenances'])
                         num_modifications+=len(json_data[2]['modifications'])
-                        num_defects+=len(json_data[3]['defects'])
+                        for i in range(len(json_data[3]['defects'])):
+                            if json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
+                            elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.minor': num_minor_defects+=1
+                            elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.moderate': num_moderate_defects+=1
+                            elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.important': num_important_defects+=1
+                            elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.critical': num_critical_defects+=1
                         num_repairs+=len(json_data[4]['repairs'])
                     except Exception as e:
                         ctx.logger.info(f"CID not found: {e}")
@@ -66,7 +80,6 @@ async def on_change(
             p_o_i.append({'transferDate': o.timestamp, 'address': o.address, 'cids': o.list})
             if (o.list[0] != ''): num_owners+=len(o.list)
 
-        ctx.logger.info(num_defects)
         holder = await models.Holder.get_or_none(svl_key=svl_key)
         cid=''
         if (curr_owner_info[len(curr_owner_info)-1] != ''): cid=curr_owner_info[len(curr_owner_info)-1]
@@ -103,13 +116,13 @@ async def on_change(
             vin=''
             brand=''
             model=''
-            year=''
-            kilometers=''
+            year=-1
+            kilometers=-1
             state=''
-            power=''
+            power=-1
             shift=''
             fuel=''
-            autonomy=''
+            autonomy=-1
             climate=''
             usage=''
             storage=''
@@ -140,7 +153,11 @@ async def on_change(
                 num_owners=num_owners,
                 num_maintenances=num_maintenances,
                 num_modifications=num_modifications,
-                num_defects=num_defects,
+                num_cosmetic_defects=num_cosmetic_defects,
+                num_minor_defects=num_minor_defects,
+                num_moderate_defects=num_moderate_defects,
+                num_important_defects=num_important_defects,
+                num_critical_defects=num_critical_defects,
                 num_repairs=num_repairs,
             )
         else:
@@ -155,18 +172,22 @@ async def on_change(
             holder.brand=brand
             holder.model=model
             holder.year=year
-            kilometers=kilometers
-            state=state
-            power=power
-            shift=shift
-            fuel=fuel
-            autonomy=autonomy
-            climate=climate
-            usage=usage
-            storage=storage
+            holder.kilometers=kilometers
+            holder.state=state
+            holder.power=power
+            holder.shift=shift
+            holder.fuel=fuel
+            holder.autonomy=autonomy
+            holder.climate=climate
+            holder.usage=usage
+            holder.storage=storage
             holder.num_owners=num_owners
             holder.num_maintenances=num_maintenances
             holder.num_modifications=num_modifications
-            holder.num_defects=num_defects
+            holder.num_cosmetic_defects=num_cosmetic_defects
+            holder.num_minor_defects=num_minor_defects
+            holder.num_moderate_defects=num_moderate_defects
+            holder.num_important_defects=num_important_defects
+            holder.num_critical_defects=num_critical_defects
             holder.num_repairs=num_repairs
             await holder.save()
