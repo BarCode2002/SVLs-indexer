@@ -95,19 +95,22 @@ async def on_change(
             vin=json_data[0]['VIN']
             brand=json_data[0]['brand']
             model=json_data[0]['model']    
-            year=json_data[0]['year']
+            year=int(json_data[0]['year'])
             kilometers=json_data[0]['kilometers']
-            if (kilometers[1] == 'mi'): kilometers=str(int(float(kilometers[0])*0.621371))
-            else: kilometers=kilometers[0]
+            if (kilometers[0] != '' and kilometers[1] == 'mi'): kilometers=int(float(kilometers[0])*0.621371)
+            elif (kilometers[0] != ''): kilometers=int(kilometers[0])
+            else: kilometers=-1
             state=json_data[0]['state']
             power=json_data[0]['power']
-            if (power[1] == 'kW'): power=str(int(float(power[0])*1.34102))
-            else: power=power[0]
+            if (power[0] != '' and power[1] == 'kW'): power=int(float(power[0])*1.34102)
+            elif (power[0] != ''): power=int(power[0])
+            else: power=-1
             shift=json_data[0]['shift']
             fuel=json_data[0]['fuel']
             autonomy=json_data[0]['autonomy']
-            if (autonomy[1] == 'mi'): autonomy=str(int(float(autonomy[0])*0.621371))
-            else: autonomy=autonomy[0]
+            if (autonomy[0] != '' and autonomy[1] == 'mi'): autonomy=int(float(autonomy[0])*0.621371)
+            elif (autonomy[0] != ''): autonomy=int(autonomy[0])
+            else: autonomy=-1
             climate=json_data[0]['climate']
             usage=json_data[0]['usage']
             storage=json_data[0]['storage']
