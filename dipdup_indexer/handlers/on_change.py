@@ -101,6 +101,10 @@ async def on_change(
             elif (kilometers[0] != ''): kilometers=int(kilometers[0])
             else: kilometers=-1
             state=json_data[0]['state']
+            weight=json_data[0]['weight']
+            if (weight[0] != '' and weight[1] == 'lb'): weight=int(float(weight[0])*2.20462)
+            elif (weight[0] != ''): weight=int(weight[0])
+            else: weight=-1
             power=json_data[0]['power']
             if (power[0] != '' and power[1] == 'kW'): power=int(float(power[0])*1.34102)
             elif (power[0] != ''): power=int(power[0])
@@ -122,6 +126,7 @@ async def on_change(
             year=-1
             kilometers=-1
             state=''
+            weight=-1
             power=-1
             shift=''
             fuel=''
@@ -146,6 +151,7 @@ async def on_change(
                 year=year,
                 kilometers=kilometers,
                 state=state,
+                weight=weight,
                 power=power,
                 shift=shift,
                 fuel=fuel,
@@ -177,6 +183,7 @@ async def on_change(
             holder.year=year
             holder.kilometers=kilometers
             holder.state=state
+            holder.weight=weight
             holder.power=power
             holder.shift=shift
             holder.fuel=fuel
