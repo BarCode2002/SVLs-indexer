@@ -5,6 +5,7 @@ class Holder(Model):
     svl_key = fields.CharField(max_length=200, primary_key=True)
 
     owner_address=fields.TextField()
+    first_owner=fields.BooleanField()
     requester_address=fields.TextField()
     request_accepted=fields.BooleanField()
     current_owner_info=fields.JSONField()

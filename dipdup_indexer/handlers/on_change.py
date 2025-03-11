@@ -14,6 +14,7 @@ async def on_change(
         svl_key=svls.key.root
 
         owner_address=svls.value.owner
+        first_owner=svls.value.first_owner
         requester_address=svls.value.request                                                                    
         request_accepted=svls.value.acceptRequest
         curr_owner_info=svls.value.curr_owner_info
@@ -139,6 +140,7 @@ async def on_change(
                 svl_key=svl_key, 
                 
                 owner_address=owner_address,
+                first_owner=first_owner,
                 requester_address=requester_address,
                 request_accepted=request_accepted,
                 current_owner_info=curr_owner_info,
@@ -171,6 +173,7 @@ async def on_change(
             )
         else:
             holder.owner_address=owner_address
+            holder.first_owner=first_owner
             holder.requester_address=requester_address
             holder.request_accepted=request_accepted
             holder.current_owner_info=curr_owner_info
