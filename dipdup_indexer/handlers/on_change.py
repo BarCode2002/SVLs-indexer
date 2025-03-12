@@ -8,6 +8,258 @@ import json
 import re
 from datetime import datetime
 from io import BytesIO
+import urllib.request
+
+def check_json(json_data):
+  if len(json_data)!=5: return False
+  general_information_keys=['VIN', 'brand', 'model', 'year', 'transferDate', 'kilometers', 'mainPhotograph', 'state', 'photographs', 'weight', 'color', 'engine', 'power', 'shift', 'fuel', 'autonomy', 'climate', 'usage', 'storage', 'comments']
+  maintenances_group_keys=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
+  maintenances_type_keys=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
+  modifications_group_keys=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
+  modifications_type_keys=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
+  defects_group_keys=['date', 'kilometers', 'cause', 'type', 'shrinked']
+  defects_type_keys=['level', 'photographs', 'description', 'shrinked']
+  repairs_group_keys=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'defectsRepaired', 'numDefectsRepaired', 'type', 'shrinked']
+  repairs_type_keys=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
+  url_lists='http://127.0.0.1:3000/mongo/lists?type='
+  url_models='http://127.0.0.1:3000/mongo/models?brand='
+  url_ipfs='http://127.0.0.1:8080/ipfs/'
+  #url_lists='http://host.docker.internal:3000/mongo/lists?type='
+  #url_models='http://host.docker.internal:3000/mongo/models?brand='
+  #url_ipfs='http://host.docker.internal:8080/ipfs/'
+  
+  try:
+    if general_information_keys!=list(json_data[0].keys()): return False
+    if not re.fullmatch(r'[A-Z0-9\-]+', json_data[0]['VIN']): return False
+    with urllib.request.urlopen(url_lists+'brand') as brands:
+      if not json_data[0]['brand'] in json.loads(brands.read()): return False
+      with urllib.request.urlopen(url_models+json_data[0]['brand']) as models:
+        if not json_data[0]['model'] in json.loads(models.read()): return False
+    if not re.fullmatch(r'\d+', json_data[0]['year']): return False
+    if not re.fullmatch(r'\d*', json_data[0]['kilometers'][0]): return False
+    if json_data[0]['kilometers'][1]!='km' and json_data[0]['kilometers'][1]!='mi': return False
+    if not datetime.strptime(json_data[0]['transferDate'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+    with urllib.request.urlopen(url_ipfs+json_data[0]['mainPhotograph']) as image:
+      image.getcode()
+    with urllib.request.urlopen(url_lists+'state') as states:
+      data=json.loads(states.read())
+      data.append('DataSVL.Forms.state')
+      if not json_data[0]['state'] in data: return False
+    if len(json_data[0]['photographs']) != 20: return False
+    for cid in json_data[0]['photographs']:
+      if cid!='':
+        with urllib.request.urlopen(url_ipfs+cid) as image:
+          image.getcode()
+    if not re.fullmatch(r'\d*', json_data[0]['weight'][0]): return False
+    if json_data[0]['weight'][1]!='kg' and json_data[0]['weight'][1]!='lb': return False
+    if not re.fullmatch(r'[A-Za-z]*', json_data[0]['color']): return False
+    #json_data[0]['engine'] can be whatever
+    if not re.fullmatch(r'\d*', json_data[0]['power'][0]): return False
+    if json_data[0]['power'][1]!='cv' and json_data[0]['power'][1]!='kW': return False
+    with urllib.request.urlopen(url_lists+'shift') as shifts:
+      data=json.loads(shifts.read())
+      data.append('DataSVL.Forms.shift')
+      if not json_data[0]['shift'] in data: return False
+    with urllib.request.urlopen(url_lists+'fuel') as fuels:
+      data=json.loads(fuels.read())
+      data.append('DataSVL.Forms.fuel')
+      if not json_data[0]['fuel'] in data: return False
+    if not re.fullmatch(r'\d*', json_data[0]['autonomy'][0]): return False
+    if json_data[0]['autonomy'][1]!='km' and json_data[0]['autonomy'][1]!='mi': return False
+    with urllib.request.urlopen(url_lists+'climate') as climates:
+      data=json.loads(climates.read())
+      data.append('DataSVL.Forms.climate')
+      if not json_data[0]['climate'] in data: return False
+    with urllib.request.urlopen(url_lists+'usage') as usages:
+      data=json.loads(usages.read())
+      data.append('DataSVL.Forms.usage')
+      if not json_data[0]['usage'] in data: return False
+    with urllib.request.urlopen(url_lists+'storage') as storages:
+      data=json.loads(storages.read())
+      data.append('DataSVL.Forms.storage')
+      if not json_data[0]['storage'] in data: return False
+    #json_data[0]['comments']) can be whatever
+  except Exception as e:
+    print(f"Error checking general information in JSON: {e}")
+    return False
+    
+  try:
+    for i in range(len(json_data[1]['maintenances'])): #si maintenances no existe salta la excepcion, si maintenances = [](correcto tambien) pues no hace el loop
+      if maintenances_group_keys!=list(json_data[1]['maintenances'][i].keys()): return False
+      if not datetime.strptime(json_data[1]['maintenances'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if not re.fullmatch(r'\d*', json_data[1]['maintenances'][i]['kilometers'][0]): return False
+      if json_data[1]['maintenances'][i]['kilometers'][1]!='km' and json_data[1]['maintenances'][i]['kilometers'][1]!='mi': return False
+      #json_data[1]['maintenances'][i]['name'] can be whatever
+      if len(json_data[1]['maintenances'][i]['responsible'])!=4: return False
+      #if ((json_data[1]['maintenances'][i]['responsible'][0]==None) or (json_data[1]['maintenances'][i]['responsible'][2]==None and (json_data[1]['maintenances'][i]['responsible'][0]==0 or json_data[1]['maintenances'][i]['responsible'][0]==2))): return False
+      #with urllib.request.urlopen(url_ipfs+json_data[1]['maintenances'][i]['responsible'][3]) as image:
+        #image.getcode()
+      if len(json_data[1]['maintenances'][i]['pre'])!=20: return False
+      for cid in json_data[1]['maintenances'][i]['pre']:
+          if cid != '':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+      if len(json_data[1]['maintenances'][i]['post'])!=20: return False
+      for cid in json_data[1]['maintenances'][i]['post']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+      if not isinstance(json_data[1]['maintenances'][i]['shrinked'], bool): return False
+      if len(json_data[1]['maintenances'][i]['type']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[1]['maintenances'][i]['type'])):
+        if maintenances_type_keys!=list(json_data[1]['maintenances'][i]['type'][j].keys()): return False
+        #json_data[1]['maintenances'][i]['type'][j]['name'] can be whatever
+        if len(json_data[1]['maintenances'][i]['type'][j]['components'])!=10: return False
+        num_components=0
+        for component in json_data[1]['maintenances'][i]['type'][j]['components']:
+          if component!='': num_components+=1
+        if num_components!=json_data[1]['maintenances'][i]['type'][j]['numComponents']: return False
+        if len(json_data[1]['maintenances'][i]['type'][j]['pre'])!=20: return False
+        for cid in json_data[1]['maintenances'][i]['type'][j]['pre']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+        if len(json_data[1]['maintenances'][i]['type'][j]['post'])!=20: return False
+        for cid in json_data[1]['maintenances'][i]['type'][j]['post']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+        #json_data[1]['maintenances'][i]['type'][j]['comments'] can be whatever
+        if not isinstance(json_data[1]['maintenances'][i]['type'][j]['shrinked'], bool): return False
+  except Exception as e:
+    print(f"Error checking maintenances in JSON: {e}")
+    return False
+  
+  try:  
+    for i in range(len(json_data[2]['modifications'])): #si modifications no existe salta la excepcion, si modifications = [](correcto tambien) pues no hace el loop
+      if modifications_group_keys!=list(json_data[2]['modifications'][i].keys()): return False
+      if not datetime.strptime(json_data[2]['modifications'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if not re.fullmatch(r'\d*', json_data[2]['modifications'][i]['kilometers'][0]): return False
+      if json_data[2]['modifications'][i]['kilometers'][1]!='km' and json_data[2]['modifications'][i]['kilometers'][1]!='mi': return False
+      #json_data[2]['modifications'][i]['name'] can be whatever
+      if len(json_data[2]['modifications'][i]['responsible'])!=4: return False
+      #if ((json_data[2]['modifications'][i]['responsible'][0]==None) or (json_data[2]['modifications'][i]['responsible'][2]==None and (json_data[2]['modifications'][i]['responsible'][0]==0 or json_data[2]['modifications'][i]['responsible'][0]==2))): return False
+      #if json_data[2]['modifications'][i]['responsible'][2]==True and json_data[2]['modifications'][i]['responsible'][3]!='':
+        #with urllib.request.urlopen(url_ipfs+json_data[2]['modifications'][i]['responsible'][3]) as image:
+          #image.getcode()
+      if len(json_data[2]['modifications'][i]['pre'])!=20: return False
+      for cid in json_data[2]['modifications'][i]['pre']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+      if len(json_data[2]['modifications'][i]['post'])!=20: return False
+      for cid in json_data[2]['modifications'][i]['post']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+      if not isinstance(json_data[2]['modifications'][i]['shrinked'], bool): return False
+      if len(json_data[2]['modifications'][i]['type']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[2]['modifications'][i]['type'])):
+        if modifications_type_keys!=list(json_data[2]['modifications'][i]['type'][j].keys()): return False
+        #json_data[2]['modifications'][i]['type'][j]['name'] can be whatever
+        if len(json_data[2]['modifications'][i]['type'][j]['components'])!=10: return False
+        num_components=0
+        for component in json_data[2]['modifications'][i]['type'][j]['components']:
+          if component!='': num_components+=1
+        if num_components!=json_data[2]['modifications'][i]['type'][j]['numComponents']: return False
+        if len(json_data[2]['modifications'][i]['type'][j]['pre'])!=20: return False
+        for cid in json_data[2]['modifications'][i]['type'][j]['pre']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+        if len(json_data[2]['modifications'][i]['type'][j]['post'])!=20: return False
+        for cid in json_data[2]['modifications'][i]['type'][j]['post']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+        #json_data[2]['modifications'][i]['type'][j]['comments'] can be whatever
+        if not isinstance(json_data[2]['modifications'][i]['type'][j]['shrinked'], bool): return False  
+  except Exception as e:
+    print(f"Error checking modifications in JSON: {e}")
+    return False
+  
+  try:  
+    for i in range(len(json_data[3]['defects'])): #si defects no existe salta la excepcion, si defects = [](correcto tambien) pues no hace el loop
+      if defects_group_keys!=list(json_data[3]['defects'][i].keys()): return False
+      if not datetime.strptime(json_data[3]['defects'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if not re.fullmatch(r'\d*', json_data[3]['defects'][i]['kilometers'][0]): return False
+      if json_data[3]['defects'][i]['kilometers'][1]!='km' and json_data[3]['defects'][i]['kilometers'][1]!='mi': return False
+      #json_data[3]['defects'][i]['cause'] can be whatever
+      if not isinstance(json_data[3]['defects'][i]['shrinked'], bool): return False
+      if len(json_data[3]['defects'][i]['type']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[3]['defects'][i]['type'])):
+        if defects_type_keys!=list(json_data[3]['defects'][i]['type'][j].keys()): return False
+        with urllib.request.urlopen(url_lists+'defectLevel') as levels:
+          data=json.loads(levels.read())
+          data.append('DataSVL.Forms.level')
+          if not json_data[3]['defects'][i]['type'][j]['level'] in data: return False
+        if len(json_data[3]['defects'][i]['type'][j]['photographs'])!=20: return False
+        for cid in json_data[3]['defects'][i]['type'][j]['photographs']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+        #json_data[3]['defects'][i]['type'][j]['description'] can be whatever
+        if not isinstance(json_data[3]['defects'][i]['type'][j]['shrinked'], bool): return False
+  except Exception as e:
+    print(f"Error checking defects in JSON: {e}")
+    return False
+    
+  try:  
+    for i in range(len(json_data[4]['repairs'])): #si repairs no existe salta la excepcion, si repairs = [](correcto tambien) pues no hace el loop
+      if repairs_group_keys!=list(json_data[4]['repairs'][i].keys()): return False
+      if not datetime.strptime(json_data[4]['repairs'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if not re.fullmatch(r'\d*', json_data[4]['repairs'][i]['kilometers'][0]): return False
+      if json_data[4]['repairs'][i]['kilometers'][1]!='km' and json_data[4]['repairs'][i]['kilometers'][1]!='mi': return False
+      #json_data[4]['repairs'][i]['name'] can be whatever
+      if len(json_data[4]['repairs'][i]['responsible'])!=4: return False
+      #if ((json_data[4]['repairs'][i]['responsible'][0]==None) or (json_data[4]['repairs'][i]['responsible'][2]==None and (json_data[4]['repairs'][i]['responsible'][0]==0 or json_data[4]['repairs'][i]['responsible'][0]==2))): return False
+      #if json_data[4]['repairs'][i]['responsible'][2]==True and json_data[4]['repairs'][i]['responsible'][3]!='':
+        #with urllib.request.urlopen(url_ipfs+json_data[4]['repairs'][i]['responsible'][3]) as image:
+          #image.getcode()
+      if len(json_data[4]['repairs'][i]['pre'])!=20: return False
+      for cid in json_data[4]['repairs'][i]['pre']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+      if len(json_data[4]['repairs'][i]['post'])!=20: return False
+      for cid in json_data[4]['repairs'][i]['post']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+      if len(json_data[4]['repairs'][i]['type'][j]['defectsRepaired'])!=10: return False
+      num_defectsRepaired=0
+      for defectRepaired in json_data[4]['repairs'][i]['type'][j]['defectsRepaired']: 
+        if defectRepaired[0]!=-1 and defectRepaired[1]!=-1 and defectRepaired[2]!=-1: num_defectsRepaired+=1
+      if num_defectsRepaired!=json_data[4]['repairs'][i]['type'][j]['numDefectsRepaired']: return False #primero miro si coincide el numero de defects repaired completados
+      for l in range(num_defectsRepaired): #luego miro que estan en las primeras posiciones(de 0 a num_defectsRepaired)
+        if json_data[4]['repairs'][i]['type'][j]['defectsRepaired'][l][0]==-1 or json_data[4]['repairs'][i]['type'][j]['defectsRepaired'][l][1]==-1 or json_data[4]['repairs'][i]['type'][j]['defectsRepaired'][l][2]==-1: return False
+      if not isinstance(json_data[4]['repairs'][i]['shrinked'], bool): return False
+      if len(json_data[4]['repairs'][i]['type']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[4]['repairs'][i]['type'])):
+        if repairs_type_keys!=list(json_data[4]['repairs'][i]['type'][j].keys()): return False
+        #json_data[4]['repairs'][i]['type'][j]['name'] can be whatever
+        if len(json_data[4]['repairs'][i]['type'][j]['components'])!=10: return False
+        num_components=0
+        for component in json_data[4]['repairs'][i]['type'][j]['components']:
+          if component!='': num_components+=1
+        if num_components!=json_data[4]['repairs'][i]['type'][j]['numComponents']: return False
+        if len(json_data[4]['repairs'][i]['type'][j]['pre'])!=20: return False
+        for cid in json_data[4]['repairs'][i]['type'][j]['pre']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+        if len(json_data[4]['repairs'][i]['type'][j]['post'])!=20: return False
+        for cid in json_data[4]['repairs'][i]['type'][j]['post']:
+          if cid!='':
+            with urllib.request.urlopen(url_ipfs+cid) as image:
+              image.getcode()
+        #json_data[4]['repairs'][i]['type'][j]['comments'] can be whatever
+        if not isinstance(json_data[4]['repairs'][i]['type'][j]['shrinked'], bool): return False
+  except Exception as e:
+    print(f"Error checking repairs in JSON: {e}")
+    return False
+  
+  return True
 
 async def on_change(
   ctx: HandlerContext,
@@ -61,61 +313,73 @@ async def on_change(
                     timeout=1,
                   )
                   with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
-                    json_data = json.load(gz_file)
-                  num_maintenances+=len(json_data[1]['maintenances'])
-                  num_modifications+=len(json_data[2]['modifications'])
-                  for i in range(len(json_data[3]['defects'])):
-                    if json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
-                    elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.minor': num_minor_defects+=1
-                    elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.moderate': num_moderate_defects+=1
-                    elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.important': num_important_defects+=1
-                    elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.critical': num_critical_defects+=1
-                  num_repairs+=len(json_data[4]['repairs'])
+                    json_data=json.load(gz_file)
+                  if check_json(json_data):
+                    num_maintenances+=len(json_data[1]['maintenances'])
+                    num_modifications+=len(json_data[2]['modifications'])
+                    for i in range(len(json_data[3]['defects'])):
+                      for j in range(len(json_data[3]['defects'][i]['type'])):
+                        if json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
+                        elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
+                        elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
+                        elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
+                        elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
+                    num_repairs+=len(json_data[4]['repairs'])
+                  else:
+                    ctx.logger.info(f"JSON not valid {cid}")
+                    svl_valid=False
                 except Exception as e:
                   ctx.logger.info(f"CID not found: {cid} / {e}")
                   svl_valid=False
             p_o_i.append({'transferDate': o.timestamp, 'address': o.address, 'cids': o.list})
             if (o.list[0] != ''): num_owners+=len(o.list)
 
-      if curr_owner_info == []: svl_valid=False
+      if curr_owner_info==[]: svl_valid=False
       num_owners+=len(curr_owner_info)
+      print(num_owners)
       for cid in curr_owner_info:
-        if svl_valid and cid != '': #only possible when just transferred
+        if svl_valid and cid!='': #only possible when just transferred
           try: 
             response = await local_ipfs.request(
               method='get',
-              url=cid, 
+              url=cid,
               timeout=1,
             )
             with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
-              json_data = json.load(gz_file)
-            num_maintenances+=len(json_data[1]['maintenances'])
-            num_modifications+=len(json_data[2]['modifications'])
-            for i in range(len(json_data[3]['defects'])):
-              if json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
-              elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.minor': num_minor_defects+=1
-              elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.moderate': num_moderate_defects+=1
-              elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.important': num_important_defects+=1
-              elif json_data[3]['defects'][i]['type'][0]['level'] == 'Lists.DefectLevel.critical': num_critical_defects+=1
-            num_repairs+=len(json_data[4]['repairs'])
+              json_data=json.load(gz_file)
+            if check_json(json_data):
+              num_maintenances+=len(json_data[1]['maintenances'])
+              num_modifications+=len(json_data[2]['modifications'])
+              for i in range(len(json_data[3]['defects'])):
+                ctx.logger.info("F")
+                for j in range(len(json_data[3]['defects'][i]['type'])):
+                  if json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
+                  elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
+                  elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
+                  elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
+                  elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
+              num_repairs+=len(json_data[4]['repairs'])
+            else:
+              ctx.logger.info(f"JSON not valid {cid}")
+              svl_valid=False
           except Exception as e:
             ctx.logger.info(f"CID not found: {cid} / {e}")
             svl_valid=False
 
       if svl_valid:
         ctx.logger.info("SVL is valid")
-        holder = await models.Holder.get_or_none(svl_key=svl_key)
+        holder=await models.Holder.get_or_none(svl_key=svl_key)
         cid=''
-        if (curr_owner_info[len(curr_owner_info)-1] != ''): cid=curr_owner_info[len(curr_owner_info)-1] #not just transferred
-        elif (len(prev_owners_info[0].list) > 0): cid = prev_owners_info[0].list[len(prev_owners_info[0].list)-1] #just transferred so get prev_owners value
+        if (curr_owner_info[len(curr_owner_info)-1]!=''): cid=curr_owner_info[len(curr_owner_info)-1] #not just transferred
+        elif (len(prev_owners_info[0].list)>0): cid=prev_owners_info[0].list[len(prev_owners_info[0].list)-1] #just transferred so get prev_owners value
         try: 
           response = await local_ipfs.request(
-              method='get',
-              url=cid, 
-              timeout=1,
+            method='get',
+            url=cid, 
+            timeout=1,
           )
           with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
-              json_data = json.load(gz_file)
+            json_data=json.load(gz_file)         
           vin=json_data[0]['VIN']
           brand=json_data[0]['brand']
           model=json_data[0]['model']    
@@ -142,6 +406,7 @@ async def on_change(
           climate=json_data[0]['climate']
           usage=json_data[0]['usage']
           storage=json_data[0]['storage']
+         
         except Exception as e: #este except no deberia pasar ya que se revisa antes, pero lo dejo por hay fallo de conexion
           ctx.logger.info(f"CID not found: {e}")
           vin=''
@@ -158,7 +423,7 @@ async def on_change(
           climate=''
           usage=''
           storage=''
-        if holder is None:
+        if svl_valid and holder is None:
           await models.Holder.create(
             svl_key=svl_key, 
             
@@ -194,7 +459,7 @@ async def on_change(
             num_critical_defects=num_critical_defects,
             num_repairs=num_repairs,
           )
-        else:
+        elif svl_valid:
           holder.owner_address=owner_address
           holder.first_owner=first_owner
           holder.requester_address=requester_address
