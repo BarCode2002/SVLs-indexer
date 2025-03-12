@@ -5,6 +5,8 @@ from dipdup_indexer.types.tz_svls.tezos_big_maps.svls_key import SvlsKey
 from dipdup_indexer.types.tz_svls.tezos_big_maps.svls_value import SvlsValue
 import gzip
 import json
+import re
+from datetime import datetime
 from io import BytesIO
 
 async def on_change(
@@ -35,6 +37,18 @@ async def on_change(
 
       svl_valid=True
 
+      match = re.match(r"^(\d{2} \d{2} \d{4} \d{2}:\d{2}:\d{2}) (tz1[a-zA-Z0-9]{33})$", svl_key)
+      if not match: 
+        ctx.logger.info('Wrong svl_key pattern')
+        svl_valid=False
+      if svl_valid:
+        date_part, address_part = match.groups()
+        try:
+          datetime.strptime(date_part, "%d %m %Y %H:%M:%S")
+        except ValueError:
+          ctx.logger.info('Date not valid in svl_key')
+          svl_valid=False
+      
       if not first_owner:
         for o in prev_owners_info:
           if svl_valid:
@@ -89,7 +103,7 @@ async def on_change(
             svl_valid=False
 
       if svl_valid:
-        ctx.logger.info("HOLA")
+        ctx.logger.info("SVL is valid")
         holder = await models.Holder.get_or_none(svl_key=svl_key)
         cid=''
         if (curr_owner_info[len(curr_owner_info)-1] != ''): cid=curr_owner_info[len(curr_owner_info)-1] #not just transferred
@@ -128,7 +142,7 @@ async def on_change(
           climate=json_data[0]['climate']
           usage=json_data[0]['usage']
           storage=json_data[0]['storage']
-        except Exception as e:
+        except Exception as e: #este except no deberia pasar ya que se revisa antes, pero lo dejo por hay fallo de conexion
           ctx.logger.info(f"CID not found: {e}")
           vin=''
           brand=''
