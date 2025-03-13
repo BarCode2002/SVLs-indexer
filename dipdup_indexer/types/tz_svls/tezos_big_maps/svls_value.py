@@ -18,7 +18,6 @@ class SvlsValue(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    VIN: str
     acceptRequest: bool
     curr_owner_info: List[str]
     first_owner: bool
