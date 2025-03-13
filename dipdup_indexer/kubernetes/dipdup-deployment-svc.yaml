@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dipdup-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dipdup
+  template:
+    metadata:
+      labels:
+        app: dipdup
+    spec:
+      containers:
+        - args:
+            - -C
+            - compose
+            - run
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: postgres-configmap
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_HOST
+                  name: postgres-configmap
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: postgres-secret
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_USER
+                  name: postgres-secret
+          image: barcode11/indexer:latest
+          name: dipdup-container
+          ports:
+            - containerPort: 46339
+            - containerPort: 9000
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: dipdup-svc
+spec:
+  ports:
+    - name: dipdup-port-46339
+      port: 46339
+      targetPort: 46339
+    - name: dipdup-port-9000
+      port: 9000
+      targetPort: 9000
+  selector:
+    app: dipdup

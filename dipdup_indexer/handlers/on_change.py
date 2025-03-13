@@ -351,7 +351,6 @@ async def on_change(
               num_maintenances+=len(json_data[1]['maintenances'])
               num_modifications+=len(json_data[2]['modifications'])
               for i in range(len(json_data[3]['defects'])):
-                ctx.logger.info("F")
                 for j in range(len(json_data[3]['defects'][i]['type'])):
                   if json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
                   elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
