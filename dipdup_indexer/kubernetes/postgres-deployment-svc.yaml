@@ -28,21 +28,14 @@ spec:
                   name: postgres-secret
             - name: POSTGRES_USER
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   key: POSTGRES_USER
-                  name: postgres-configmap
+                  name: postgres-secret
           image: postgres:16
           name: postgres-container
           ports:
             - containerPort: 5432
               protocol: TCP
-          volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: postgres-data
-      volumes:
-        - name: postgres-data
-          persistentVolumeClaim:
-            claimName: postgres-pvc
 
 ---
 

@@ -4,4 +4,4 @@ metadata:
   name: postgres-configmap
 data:
   POSTGRES_DB: postgres
-  POSTGRES_HOST: indexer-postgres.c5ue2amuynf2.eu-west-3.rds.amazonaws.com
+  POSTGRES_HOST: postgres-svc
