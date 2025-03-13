@@ -110,10 +110,7 @@ def check_json(json_data):
         if maintenances_type_keys!=list(json_data[1]['maintenances'][i]['type'][j].keys()): return False
         #json_data[1]['maintenances'][i]['type'][j]['name'] can be whatever
         if len(json_data[1]['maintenances'][i]['type'][j]['components'])!=10: return False
-        num_components=0
-        for component in json_data[1]['maintenances'][i]['type'][j]['components']:
-          if component!='': num_components+=1
-        if num_components!=json_data[1]['maintenances'][i]['type'][j]['numComponents']: return False
+        if json_data[1]['maintenances'][i]['type'][j]['numComponents']<0 or json_data[1]['maintenances'][i]['type'][j]['numComponents']>9: return False
         if len(json_data[1]['maintenances'][i]['type'][j]['pre'])!=20: return False
         for cid in json_data[1]['maintenances'][i]['type'][j]['pre']:
           if cid!='':
@@ -158,10 +155,7 @@ def check_json(json_data):
         if modifications_type_keys!=list(json_data[2]['modifications'][i]['type'][j].keys()): return False
         #json_data[2]['modifications'][i]['type'][j]['name'] can be whatever
         if len(json_data[2]['modifications'][i]['type'][j]['components'])!=10: return False
-        num_components=0
-        for component in json_data[2]['modifications'][i]['type'][j]['components']:
-          if component!='': num_components+=1
-        if num_components!=json_data[2]['modifications'][i]['type'][j]['numComponents']: return False
+        if json_data[2]['modifications'][i]['type'][j]['numComponents']<0 or json_data[2]['modifications'][i]['type'][j]['numComponents']>9: return False
         if len(json_data[2]['modifications'][i]['type'][j]['pre'])!=20: return False
         for cid in json_data[2]['modifications'][i]['type'][j]['pre']:
           if cid!='':
@@ -226,23 +220,20 @@ def check_json(json_data):
           if cid!='':
             with urllib.request.urlopen(url_ipfs+cid) as image:
               image.getcode()
-      if len(json_data[4]['repairs'][i]['type'][j]['defectsRepaired'])!=10: return False
+      if len(json_data[4]['repairs'][i]['defectsRepaired'])!=10: return False
       num_defectsRepaired=0
-      for defectRepaired in json_data[4]['repairs'][i]['type'][j]['defectsRepaired']: 
+      for defectRepaired in json_data[4]['repairs'][i]['defectsRepaired']: 
         if defectRepaired[0]!=-1 and defectRepaired[1]!=-1 and defectRepaired[2]!=-1: num_defectsRepaired+=1
-      if num_defectsRepaired!=json_data[4]['repairs'][i]['type'][j]['numDefectsRepaired']: return False #primero miro si coincide el numero de defects repaired completados
+      if num_defectsRepaired!=json_data[4]['repairs'][i]['numDefectsRepaired']: return False #primero miro si coincide el numero de defects repaired completados
       for l in range(num_defectsRepaired): #luego miro que estan en las primeras posiciones(de 0 a num_defectsRepaired)
-        if json_data[4]['repairs'][i]['type'][j]['defectsRepaired'][l][0]==-1 or json_data[4]['repairs'][i]['type'][j]['defectsRepaired'][l][1]==-1 or json_data[4]['repairs'][i]['type'][j]['defectsRepaired'][l][2]==-1: return False
+        if json_data[4]['repairs'][i]['defectsRepaired'][l][0]==-1 or json_data[4]['repairs'][i]['defectsRepaired'][l][1]==-1 or json_data[4]['repairs'][i]['defectsRepaired'][l][2]==-1: return False
       if not isinstance(json_data[4]['repairs'][i]['shrinked'], bool): return False
       if len(json_data[4]['repairs'][i]['type']) == 0: return False #siempre habra un type como minimo
       for j in range(len(json_data[4]['repairs'][i]['type'])):
         if repairs_type_keys!=list(json_data[4]['repairs'][i]['type'][j].keys()): return False
         #json_data[4]['repairs'][i]['type'][j]['name'] can be whatever
         if len(json_data[4]['repairs'][i]['type'][j]['components'])!=10: return False
-        num_components=0
-        for component in json_data[4]['repairs'][i]['type'][j]['components']:
-          if component!='': num_components+=1
-        if num_components!=json_data[4]['repairs'][i]['type'][j]['numComponents']: return False
+        if json_data[4]['repairs'][i]['type'][j]['numComponents']<0 or json_data[4]['repairs'][i]['type'][j]['numComponents']>9: return False
         if len(json_data[4]['repairs'][i]['type'][j]['pre'])!=20: return False
         for cid in json_data[4]['repairs'][i]['type'][j]['pre']:
           if cid!='':
@@ -336,7 +327,6 @@ async def on_change(
 
       if curr_owner_info==[]: svl_valid=False
       num_owners+=len(curr_owner_info)
-      print(num_owners)
       for cid in curr_owner_info:
         if svl_valid and cid!='': #only possible when just transferred
           try: 
@@ -351,7 +341,6 @@ async def on_change(
               num_maintenances+=len(json_data[1]['maintenances'])
               num_modifications+=len(json_data[2]['modifications'])
               for i in range(len(json_data[3]['defects'])):
-                ctx.logger.info("F")
                 for j in range(len(json_data[3]['defects'][i]['type'])):
                   if json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
                   elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
