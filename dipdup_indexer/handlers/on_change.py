@@ -91,9 +91,9 @@ def check_json(json_data):
       if json_data[1]['maintenances'][i]['kilometers'][1]!='km' and json_data[1]['maintenances'][i]['kilometers'][1]!='mi': return False
       #json_data[1]['maintenances'][i]['name'] can be whatever
       if len(json_data[1]['maintenances'][i]['responsible'])!=4: return False
-      #if ((json_data[1]['maintenances'][i]['responsible'][0]==None) or (json_data[1]['maintenances'][i]['responsible'][2]==None and (json_data[1]['maintenances'][i]['responsible'][0]==0 or json_data[1]['maintenances'][i]['responsible'][0]==2))): return False
-      #with urllib.request.urlopen(url_ipfs+json_data[1]['maintenances'][i]['responsible'][3]) as image:
-        #image.getcode()
+      if ((json_data[1]['maintenances'][i]['responsible'][0]==None) or (json_data[1]['maintenances'][i]['responsible'][2]==None and (json_data[1]['maintenances'][i]['responsible'][0]==0 or json_data[1]['maintenances'][i]['responsible'][0]==2))): return False
+      with urllib.request.urlopen(url_ipfs+json_data[1]['maintenances'][i]['responsible'][3]) as image:
+        image.getcode()
       if len(json_data[1]['maintenances'][i]['pre'])!=20: return False
       for cid in json_data[1]['maintenances'][i]['pre']:
           if cid != '':
@@ -138,10 +138,10 @@ def check_json(json_data):
       if json_data[2]['modifications'][i]['kilometers'][1]!='km' and json_data[2]['modifications'][i]['kilometers'][1]!='mi': return False
       #json_data[2]['modifications'][i]['name'] can be whatever
       if len(json_data[2]['modifications'][i]['responsible'])!=4: return False
-      #if ((json_data[2]['modifications'][i]['responsible'][0]==None) or (json_data[2]['modifications'][i]['responsible'][2]==None and (json_data[2]['modifications'][i]['responsible'][0]==0 or json_data[2]['modifications'][i]['responsible'][0]==2))): return False
-      #if json_data[2]['modifications'][i]['responsible'][2]==True and json_data[2]['modifications'][i]['responsible'][3]!='':
-        #with urllib.request.urlopen(url_ipfs+json_data[2]['modifications'][i]['responsible'][3]) as image:
-          #image.getcode()
+      if ((json_data[2]['modifications'][i]['responsible'][0]==None) or (json_data[2]['modifications'][i]['responsible'][2]==None and (json_data[2]['modifications'][i]['responsible'][0]==0 or json_data[2]['modifications'][i]['responsible'][0]==2))): return False
+      if json_data[2]['modifications'][i]['responsible'][2]==True and json_data[2]['modifications'][i]['responsible'][3]!='':
+        with urllib.request.urlopen(url_ipfs+json_data[2]['modifications'][i]['responsible'][3]) as image:
+          image.getcode()
       if len(json_data[2]['modifications'][i]['pre'])!=20: return False
       for cid in json_data[2]['modifications'][i]['pre']:
           if cid!='':
@@ -212,10 +212,10 @@ def check_json(json_data):
       if json_data[4]['repairs'][i]['kilometers'][1]!='km' and json_data[4]['repairs'][i]['kilometers'][1]!='mi': return False
       #json_data[4]['repairs'][i]['name'] can be whatever
       if len(json_data[4]['repairs'][i]['responsible'])!=4: return False
-      #if ((json_data[4]['repairs'][i]['responsible'][0]==None) or (json_data[4]['repairs'][i]['responsible'][2]==None and (json_data[4]['repairs'][i]['responsible'][0]==0 or json_data[4]['repairs'][i]['responsible'][0]==2))): return False
-      #if json_data[4]['repairs'][i]['responsible'][2]==True and json_data[4]['repairs'][i]['responsible'][3]!='':
-        #with urllib.request.urlopen(url_ipfs+json_data[4]['repairs'][i]['responsible'][3]) as image:
-          #image.getcode()
+      if ((json_data[4]['repairs'][i]['responsible'][0]==None) or (json_data[4]['repairs'][i]['responsible'][2]==None and (json_data[4]['repairs'][i]['responsible'][0]==0 or json_data[4]['repairs'][i]['responsible'][0]==2))): return False
+      if json_data[4]['repairs'][i]['responsible'][2]==True and json_data[4]['repairs'][i]['responsible'][3]!='':
+        with urllib.request.urlopen(url_ipfs+json_data[4]['repairs'][i]['responsible'][3]) as image:
+          image.getcode()
       if len(json_data[4]['repairs'][i]['pre'])!=20: return False
       for cid in json_data[4]['repairs'][i]['pre']:
           if cid!='':
