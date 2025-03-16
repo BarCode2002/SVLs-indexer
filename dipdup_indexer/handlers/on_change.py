@@ -379,7 +379,7 @@ async def on_change(
           else: kilometers=-1
           state=json_data[0]['state']
           weight=json_data[0]['weight']
-          if (weight[0] != '' and weight[1] == 'lb'): weight=int(float(weight[0])*2.20462)
+          if (weight[0] != '' and weight[1] == 'lb'): weight=int(float(weight[0])*0.453592)
           elif (weight[0] != ''): weight=int(weight[0])
           else: weight=-1
           power=json_data[0]['power']
