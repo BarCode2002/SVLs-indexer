@@ -86,19 +86,20 @@ def check_json(json_data):
   try:
     for i in range(len(json_data[1]['maintenances'])): #si maintenances no existe salta la excepcion, si maintenances = [](correcto tambien) pues no hace el loop
       if maintenances_group_keys!=list(json_data[1]['maintenances'][i].keys()): return False
-      if not datetime.strptime(json_data[1]['maintenances'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if json_data[1]['maintenances'][i]['date']!='' and not datetime.strptime(json_data[1]['maintenances'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
       if not re.fullmatch(r'\d*', json_data[1]['maintenances'][i]['kilometers'][0]): return False
       if json_data[1]['maintenances'][i]['kilometers'][1]!='km' and json_data[1]['maintenances'][i]['kilometers'][1]!='mi': return False
       #json_data[1]['maintenances'][i]['name'] can be whatever
       if len(json_data[1]['maintenances'][i]['responsible'])!=4: return False
       if ((json_data[1]['maintenances'][i]['responsible'][0]==None) or (json_data[1]['maintenances'][i]['responsible'][2]==None and (json_data[1]['maintenances'][i]['responsible'][0]==0 or json_data[1]['maintenances'][i]['responsible'][0]==2))): return False
-      with urllib.request.urlopen(url_ipfs+json_data[1]['maintenances'][i]['responsible'][3]) as image:
-        image.getcode()
+      if json_data[1]['maintenances'][i]['responsible'][2]==True and json_data[1]['maintenances'][i]['responsible'][3]!='':
+        with urllib.request.urlopen(url_ipfs+json_data[1]['maintenances'][i]['responsible'][3]) as image:
+          image.getcode()
       if len(json_data[1]['maintenances'][i]['pre'])!=20: return False
       for cid in json_data[1]['maintenances'][i]['pre']:
-          if cid != '':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
+        if cid!='':
+          with urllib.request.urlopen(url_ipfs+cid) as image:
+            image.getcode()
       if len(json_data[1]['maintenances'][i]['post'])!=20: return False
       for cid in json_data[1]['maintenances'][i]['post']:
           if cid!='':
@@ -130,7 +131,7 @@ def check_json(json_data):
   try:  
     for i in range(len(json_data[2]['modifications'])): #si modifications no existe salta la excepcion, si modifications = [](correcto tambien) pues no hace el loop
       if modifications_group_keys!=list(json_data[2]['modifications'][i].keys()): return False
-      if not datetime.strptime(json_data[2]['modifications'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if json_data[2]['modifications'][i]['date']!='' and not datetime.strptime(json_data[2]['modifications'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
       if not re.fullmatch(r'\d*', json_data[2]['modifications'][i]['kilometers'][0]): return False
       if json_data[2]['modifications'][i]['kilometers'][1]!='km' and json_data[2]['modifications'][i]['kilometers'][1]!='mi': return False
       #json_data[2]['modifications'][i]['name'] can be whatever
@@ -175,7 +176,7 @@ def check_json(json_data):
   try:  
     for i in range(len(json_data[3]['defects'])): #si defects no existe salta la excepcion, si defects = [](correcto tambien) pues no hace el loop
       if defects_group_keys!=list(json_data[3]['defects'][i].keys()): return False
-      if not datetime.strptime(json_data[3]['defects'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if json_data[3]['defects'][i]['date']!='' and not datetime.strptime(json_data[3]['defects'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
       if not re.fullmatch(r'\d*', json_data[3]['defects'][i]['kilometers'][0]): return False
       if json_data[3]['defects'][i]['kilometers'][1]!='km' and json_data[3]['defects'][i]['kilometers'][1]!='mi': return False
       #json_data[3]['defects'][i]['cause'] can be whatever
@@ -201,7 +202,7 @@ def check_json(json_data):
   try:  
     for i in range(len(json_data[4]['repairs'])): #si repairs no existe salta la excepcion, si repairs = [](correcto tambien) pues no hace el loop
       if repairs_group_keys!=list(json_data[4]['repairs'][i].keys()): return False
-      if not datetime.strptime(json_data[4]['repairs'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if json_data[4]['repairs'][i]['date']!='' and not datetime.strptime(json_data[4]['repairs'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
       if not re.fullmatch(r'\d*', json_data[4]['repairs'][i]['kilometers'][0]): return False
       if json_data[4]['repairs'][i]['kilometers'][1]!='km' and json_data[4]['repairs'][i]['kilometers'][1]!='mi': return False
       #json_data[4]['repairs'][i]['name'] can be whatever
