@@ -11,7 +11,13 @@ from io import BytesIO
 import urllib.request
 
 def check_json(json_data):
-  if len(json_data)!=5: return False
+  try:
+    if len(json_data)!=6: return False
+    if json_data[5]['version']!='base': return False
+  except Exception as e:
+    print(f"Error checking version in JSON: {e}")
+    return False
+  
   general_information_keys=['VIN', 'brand', 'model', 'year', 'transferDate', 'kilometers', 'mainPhotograph', 'state', 'photographs', 'weight', 'color', 'engine', 'power', 'shift', 'fuel', 'autonomy', 'climate', 'usage', 'storage', 'comments']
   maintenances_group_keys=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
   maintenances_type_keys=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
@@ -21,9 +27,9 @@ def check_json(json_data):
   defects_type_keys=['level', 'photographs', 'description', 'shrinked']
   repairs_group_keys=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'defectsRepaired', 'numDefectsRepaired', 'type', 'shrinked']
   repairs_type_keys=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
-  #url_lists='http://127.0.0.1:3000/mongo/lists?type='
-  #url_models='http://127.0.0.1:3000/mongo/models?brand='
-  #url_ipfs='http://127.0.0.1:8080/ipfs/'
+  # url_lists='http://127.0.0.1:3000/mongo/lists?type='
+  # url_models='http://127.0.0.1:3000/mongo/models?brand='
+  # url_ipfs='http://127.0.0.1:8080/ipfs/'
   url_lists='http://host.docker.internal:3000/mongo/lists?type='#poner api-svc y ale
   url_models='http://host.docker.internal:3000/mongo/models?brand='
   url_ipfs='http://host.docker.internal:8080/ipfs/'
