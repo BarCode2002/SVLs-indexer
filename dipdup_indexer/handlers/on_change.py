@@ -375,24 +375,24 @@ async def on_change(
           model=json_data[0]['model']    
           year=int(json_data[0]['year'])
           kilometers=json_data[0]['kilometers']
-          if (kilometers[0] != '' and kilometers[1] == 'mi'): kilometers=int(float(kilometers[0])*0.621371)
-          elif (kilometers[0] != ''): kilometers=int(kilometers[0])
-          else: kilometers=-1
+          if (kilometers[0]!='' and kilometers[1]=='mi'): kilometers=int(float(kilometers[0])*0.621371)
+          elif (kilometers[0]!=''): kilometers=int(kilometers[0])
+          else: kilometers=0
           state=json_data[0]['state']
           weight=json_data[0]['weight']
-          if (weight[0] != '' and weight[1] == 'lb'): weight=int(float(weight[0])*0.453592)
-          elif (weight[0] != ''): weight=int(weight[0])
-          else: weight=-1
+          if (weight[0]!='' and weight[1]=='lb'): weight=int(float(weight[0])*0.453592)
+          elif (weight[0]!=''): weight=int(weight[0])
+          else: weight=0
           power=json_data[0]['power']
-          if (power[0] != '' and power[1] == 'kW'): power=int(float(power[0])*1.34102)
-          elif (power[0] != ''): power=int(power[0])
-          else: power=-1
+          if (power[0]!='' and power[1]=='kW'): power=int(float(power[0])*1.34102)
+          elif (power[0]!=''): power=int(power[0])
+          else: power=0
           shift=json_data[0]['shift']
           fuel=json_data[0]['fuel']
           autonomy=json_data[0]['autonomy']
-          if (autonomy[0] != '' and autonomy[1] == 'mi'): autonomy=int(float(autonomy[0])*0.621371)
-          elif (autonomy[0] != ''): autonomy=int(autonomy[0])
-          else: autonomy=-1
+          if (autonomy[0]!='' and autonomy[1]=='mi'): autonomy=int(float(autonomy[0])*0.621371)
+          elif (autonomy[0]!=''): autonomy=int(autonomy[0])
+          else: autonomy=0
           climate=json_data[0]['climate']
           usage=json_data[0]['usage']
           storage=json_data[0]['storage']
