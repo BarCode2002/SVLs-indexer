@@ -30,7 +30,7 @@ def check_json(json_data):
   # url_lists='http://127.0.0.1:3000/mongo/lists?type='
   # url_models='http://127.0.0.1:3000/mongo/models?brand='
   # url_ipfs='http://127.0.0.1:8080/ipfs/'
-  url_lists='http://host.docker.internal:3000/mongo/lists?type='#poner api-svc y ale
+  url_lists='http://host.docker.internal:3000/mongo/lists?type='
   url_models='http://host.docker.internal:3000/mongo/models?brand='
   url_ipfs='http://host.docker.internal:8080/ipfs/'
   
