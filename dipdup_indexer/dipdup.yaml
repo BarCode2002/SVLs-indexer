@@ -4,7 +4,7 @@ package: dipdup_indexer
 datasources:
   tzkt:
     kind: tezos.tzkt
-    url: https://api.ghostnet.tzkt.io
+    url: https://api.mainnet.tzkt.io
   local_ipfs:
     kind: http
     url: http://host.docker.internal:8080/ipfs/
