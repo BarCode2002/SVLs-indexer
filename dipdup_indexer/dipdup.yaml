@@ -7,7 +7,7 @@ datasources:
     url: https://api.ghostnet.tzkt.io
   local_ipfs:
     kind: http
-    url: http://host.docker.internal:8080/ipfs/
+    url: http://127.0.0.1:8080/ipfs/
     http:
       retry_count: 0
 
