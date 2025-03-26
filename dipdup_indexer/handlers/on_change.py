@@ -13,20 +13,33 @@ import urllib.request
 def check_json(json_data):
   try:
     if len(json_data)!=6: return False
-    if json_data[5]['version']!='base': return False
+    if json_data[5]['version']!='base' and json_data[5]['version']!='baseSimple': return False
   except Exception as e:
     print(f"Error checking version in JSON: {e}")
     return False
   
-  general_information_keys=['VIN', 'brand', 'model', 'year', 'transferDate', 'kilometers', 'mainPhotograph', 'state', 'photographs', 'weight', 'color', 'engine', 'power', 'shift', 'fuel', 'autonomy', 'climate', 'usage', 'storage', 'comments']
-  maintenances_group_keys=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
-  maintenances_type_keys=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
-  modifications_group_keys=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
-  modifications_type_keys=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
+  json_version=json_data[5]['version']
+
+  general_information_keys=['VIN', 'brand', 'model', 'year', 'transferDate', 'kilometers', 'state', 'images', 'weight', 'color', 'engine', 'power', 'shift', 'fuel', 'autonomy', 'climate', 'usage', 'storage', 'comments']
+  
+  maintenances_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
+  maintenances_type_keys_base=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
+  maintenances_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'type', 'shrinked']
+  maintenances_type_keys_baseSimple=['name', 'images', 'comments', 'shrinked']
+  
+  modifications_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
+  modifications_type_keys_base=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
+  modifications_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'type', 'shrinked']
+  modifications_type_keys_baseSimple=['name', 'images', 'comments', 'shrinked']
+  
   defects_group_keys=['date', 'kilometers', 'cause', 'type', 'shrinked']
-  defects_type_keys=['level', 'photographs', 'description', 'shrinked']
-  repairs_group_keys=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'defectsRepaired', 'numDefectsRepaired', 'type', 'shrinked']
-  repairs_type_keys=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
+  defects_type_keys=['level', 'images', 'description', 'shrinked']
+  
+  repairs_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'defectsRepaired', 'numDefectsRepaired', 'type', 'shrinked']
+  repairs_type_keys_base=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
+  repairs_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'defectsRepaired', 'numDefectsRepaired', 'type', 'shrinked']
+  repairs_type_keys_baseSimple=['name', 'images', 'comments', 'shrinked']
+  
   # url_lists='http://127.0.0.1:3000/mongo/lists?type='
   # url_models='http://127.0.0.1:3000/mongo/models?brand='
   # url_ipfs='http://127.0.0.1:8080/ipfs/'
@@ -39,20 +52,18 @@ def check_json(json_data):
     if not re.fullmatch(r'[A-Z0-9\-]+', json_data[0]['VIN']): return False
     with urllib.request.urlopen(url_lists+'brand') as brands:
       if not json_data[0]['brand'] in json.loads(brands.read()): return False
-      with urllib.request.urlopen(url_models+json_data[0]['brand']) as models:
+      with urllib.request.urlopen(url_models+urllib.parse.quote(json_data[0]['brand'])) as models:
         if not json_data[0]['model'] in json.loads(models.read()): return False
     if not re.fullmatch(r'\d+', json_data[0]['year']): return False
     if not re.fullmatch(r'\d*', json_data[0]['kilometers'][0]): return False
     if json_data[0]['kilometers'][1]!='km' and json_data[0]['kilometers'][1]!='mi': return False
     if not datetime.strptime(json_data[0]['transferDate'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
-    with urllib.request.urlopen(url_ipfs+json_data[0]['mainPhotograph']) as image:
-      image.getcode()
     with urllib.request.urlopen(url_lists+'state') as states:
       data=json.loads(states.read())
       data.append('DataSVL.Forms.state')
       if not json_data[0]['state'] in data: return False
-    if len(json_data[0]['photographs']) != 20: return False
-    for cid in json_data[0]['photographs']:
+    if len(json_data[0]['images']) != 20: return False
+    for cid in json_data[0]['images']:
       if cid!='':
         with urllib.request.urlopen(url_ipfs+cid) as image:
           image.getcode()
@@ -90,169 +101,229 @@ def check_json(json_data):
     return False
     
   try:
-    for i in range(len(json_data[1]['maintenances'])): #si maintenances no existe salta la excepcion, si maintenances = [](correcto tambien) pues no hace el loop
-      if maintenances_group_keys!=list(json_data[1]['maintenances'][i].keys()): return False
-      if json_data[1]['maintenances'][i]['date']!='' and not datetime.strptime(json_data[1]['maintenances'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
-      if not re.fullmatch(r'\d*', json_data[1]['maintenances'][i]['kilometers'][0]): return False
-      if json_data[1]['maintenances'][i]['kilometers'][1]!='km' and json_data[1]['maintenances'][i]['kilometers'][1]!='mi': return False
-      #json_data[1]['maintenances'][i]['name'] can be whatever
-      if len(json_data[1]['maintenances'][i]['responsible'])!=4: return False
-      if ((json_data[1]['maintenances'][i]['responsible'][0]==None) or (json_data[1]['maintenances'][i]['responsible'][2]==None and (json_data[1]['maintenances'][i]['responsible'][0]==0 or json_data[1]['maintenances'][i]['responsible'][0]==2))): return False
-      if json_data[1]['maintenances'][i]['responsible'][2]==True and json_data[1]['maintenances'][i]['responsible'][3]!='':
-        with urllib.request.urlopen(url_ipfs+json_data[1]['maintenances'][i]['responsible'][3]) as image:
+    for i in range(len(json_data[1]['group'])): #si maintenances no existe salta la excepcion, si maintenances = [](correcto tambien) pues no hace el loo
+      if json_version=='base':
+        if maintenances_group_keys_base!=list(json_data[1]['group'][i].keys()): return False
+      if json_version=='baseSimple':
+        if maintenances_group_keys_baseSimple!=list(json_data[1]['group'][i].keys()): return False
+      if json_data[1]['group'][i]['date']!='' and not datetime.strptime(json_data[1]['group'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if not re.fullmatch(r'\d*', json_data[1]['group'][i]['kilometers'][0]): return False
+      if json_data[1]['group'][i]['kilometers'][1]!='km' and json_data[1]['group'][i]['kilometers'][1]!='mi': return False
+      #json_data[1]['group'][i]['name'] can be whatever
+      if len(json_data[1]['group'][i]['responsible'])!=4: return False
+      if ((json_data[1]['group'][i]['responsible'][0]==None) or (json_data[1]['group'][i]['responsible'][2]==None and (json_data[1]['group'][i]['responsible'][0]==0 or json_data[1]['group'][i]['responsible'][0]==2))): return False
+      if json_data[1]['group'][i]['responsible'][2]==True and json_data[1]['group'][i]['responsible'][3]!='':
+        with urllib.request.urlopen(url_ipfs+json_data[1]['group'][i]['responsible'][3]) as image:
           image.getcode()
-      if len(json_data[1]['maintenances'][i]['pre'])!=20: return False
-      for cid in json_data[1]['maintenances'][i]['pre']:
-        if cid!='':
-          with urllib.request.urlopen(url_ipfs+cid) as image:
-            image.getcode()
-      if len(json_data[1]['maintenances'][i]['post'])!=20: return False
-      for cid in json_data[1]['maintenances'][i]['post']:
+      if json_version=='base':
+        if len(json_data[1]['group'][i]['pre'])!=20: return False
+        for cid in json_data[1]['group'][i]['pre']:
           if cid!='':
             with urllib.request.urlopen(url_ipfs+cid) as image:
               image.getcode()
-      if not isinstance(json_data[1]['maintenances'][i]['shrinked'], bool): return False
-      if len(json_data[1]['maintenances'][i]['type']) == 0: return False #siempre habra un type como minimo
-      for j in range(len(json_data[1]['maintenances'][i]['type'])):
-        if maintenances_type_keys!=list(json_data[1]['maintenances'][i]['type'][j].keys()): return False
-        #json_data[1]['maintenances'][i]['type'][j]['name'] can be whatever
-        if len(json_data[1]['maintenances'][i]['type'][j]['components'])!=10: return False
-        if json_data[1]['maintenances'][i]['type'][j]['numComponents']<0 or json_data[1]['maintenances'][i]['type'][j]['numComponents']>9: return False
-        if len(json_data[1]['maintenances'][i]['type'][j]['pre'])!=20: return False
-        for cid in json_data[1]['maintenances'][i]['type'][j]['pre']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-        if len(json_data[1]['maintenances'][i]['type'][j]['post'])!=20: return False
-        for cid in json_data[1]['maintenances'][i]['type'][j]['post']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-        #json_data[1]['maintenances'][i]['type'][j]['comments'] can be whatever
-        if not isinstance(json_data[1]['maintenances'][i]['type'][j]['shrinked'], bool): return False
+        if len(json_data[1]['group'][i]['post'])!=20: return False
+        for cid in json_data[1]['group'][i]['post']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+      if json_version=='baseSimple':
+        if len(json_data[1]['group'][i]['images'])!=20: return False
+        for cid in json_data[1]['group'][i]['images']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+      if not isinstance(json_data[1]['group'][i]['shrinked'], bool): return False
+      if len(json_data[1]['group'][i]['type']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[1]['group'][i]['type'])):
+        if json_version=='base':
+          if maintenances_type_keys_base!=list(json_data[1]['group'][i]['type'][j].keys()): return False
+        if json_version=='baseSimple':
+          if maintenances_type_keys_baseSimple!=list(json_data[1]['group'][i]['type'][j].keys()): return False
+        #json_data[1]['group'][i]['type'][j]['name'] can be whatever
+        if json_version=='base':
+          if len(json_data[1]['group'][i]['type'][j]['components'])!=10: return False
+          if json_data[1]['group'][i]['type'][j]['numComponents']<0 or json_data[1]['group'][i]['type'][j]['numComponents']>9: return False
+          if len(json_data[1]['group'][i]['type'][j]['pre'])!=20: return False
+          for cid in json_data[1]['group'][i]['type'][j]['pre']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+          if len(json_data[1]['group'][i]['type'][j]['post'])!=20: return False
+          for cid in json_data[1]['group'][i]['type'][j]['post']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+        if json_version=='baseSimple':
+          if len(json_data[1]['group'][i]['type'][j]['images'])!=20: return False
+          for cid in json_data[1]['group'][i]['type'][j]['images']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+        #json_data[1]['group'][i]['type'][j]['comments'] can be whatever
+        if not isinstance(json_data[1]['group'][i]['type'][j]['shrinked'], bool): return False
   except Exception as e:
     print(f"Error checking maintenances in JSON: {e}")
     return False
   
   try:  
-    for i in range(len(json_data[2]['modifications'])): #si modifications no existe salta la excepcion, si modifications = [](correcto tambien) pues no hace el loop
-      if modifications_group_keys!=list(json_data[2]['modifications'][i].keys()): return False
-      if json_data[2]['modifications'][i]['date']!='' and not datetime.strptime(json_data[2]['modifications'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
-      if not re.fullmatch(r'\d*', json_data[2]['modifications'][i]['kilometers'][0]): return False
-      if json_data[2]['modifications'][i]['kilometers'][1]!='km' and json_data[2]['modifications'][i]['kilometers'][1]!='mi': return False
-      #json_data[2]['modifications'][i]['name'] can be whatever
-      if len(json_data[2]['modifications'][i]['responsible'])!=4: return False
-      if ((json_data[2]['modifications'][i]['responsible'][0]==None) or (json_data[2]['modifications'][i]['responsible'][2]==None and (json_data[2]['modifications'][i]['responsible'][0]==0 or json_data[2]['modifications'][i]['responsible'][0]==2))): return False
-      if json_data[2]['modifications'][i]['responsible'][2]==True and json_data[2]['modifications'][i]['responsible'][3]!='':
-        with urllib.request.urlopen(url_ipfs+json_data[2]['modifications'][i]['responsible'][3]) as image:
+    for i in range(len(json_data[2]['group'])): #si modifications no existe salta la excepcion, si modifications = [](correcto tambien) pues no hace el loop
+      if json_version=='base':
+        if modifications_group_keys_base!=list(json_data[2]['group'][i].keys()): return False
+      if json_version=='baseSimple':
+        if modifications_group_keys_baseSimple!=list(json_data[2]['group'][i].keys()): return False
+      if json_data[2]['group'][i]['date']!='' and not datetime.strptime(json_data[2]['group'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if not re.fullmatch(r'\d*', json_data[2]['group'][i]['kilometers'][0]): return False
+      if json_data[2]['group'][i]['kilometers'][1]!='km' and json_data[2]['group'][i]['kilometers'][1]!='mi': return False
+      #json_data[2]['group'][i]['name'] can be whatever
+      if len(json_data[2]['group'][i]['responsible'])!=4: return False
+      if ((json_data[2]['group'][i]['responsible'][0]==None) or (json_data[2]['group'][i]['responsible'][2]==None and (json_data[2]['group'][i]['responsible'][0]==0 or json_data[2]['group'][i]['responsible'][0]==2))): return False
+      if json_data[2]['group'][i]['responsible'][2]==True and json_data[2]['group'][i]['responsible'][3]!='':
+        with urllib.request.urlopen(url_ipfs+json_data[2]['group'][i]['responsible'][3]) as image:
           image.getcode()
-      if len(json_data[2]['modifications'][i]['pre'])!=20: return False
-      for cid in json_data[2]['modifications'][i]['pre']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-      if len(json_data[2]['modifications'][i]['post'])!=20: return False
-      for cid in json_data[2]['modifications'][i]['post']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-      if not isinstance(json_data[2]['modifications'][i]['shrinked'], bool): return False
-      if len(json_data[2]['modifications'][i]['type']) == 0: return False #siempre habra un type como minimo
-      for j in range(len(json_data[2]['modifications'][i]['type'])):
-        if modifications_type_keys!=list(json_data[2]['modifications'][i]['type'][j].keys()): return False
-        #json_data[2]['modifications'][i]['type'][j]['name'] can be whatever
-        if len(json_data[2]['modifications'][i]['type'][j]['components'])!=10: return False
-        if json_data[2]['modifications'][i]['type'][j]['numComponents']<0 or json_data[2]['modifications'][i]['type'][j]['numComponents']>9: return False
-        if len(json_data[2]['modifications'][i]['type'][j]['pre'])!=20: return False
-        for cid in json_data[2]['modifications'][i]['type'][j]['pre']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-        if len(json_data[2]['modifications'][i]['type'][j]['post'])!=20: return False
-        for cid in json_data[2]['modifications'][i]['type'][j]['post']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-        #json_data[2]['modifications'][i]['type'][j]['comments'] can be whatever
-        if not isinstance(json_data[2]['modifications'][i]['type'][j]['shrinked'], bool): return False  
+      if json_version=='base':
+        if len(json_data[2]['group'][i]['pre'])!=20: return False
+        for cid in json_data[2]['group'][i]['pre']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+        if len(json_data[2]['group'][i]['post'])!=20: return False
+        for cid in json_data[2]['group'][i]['post']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+      if json_version=='baseSimple':
+        if len(json_data[2]['group'][i]['images'])!=20: return False
+        for cid in json_data[2]['group'][i]['images']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+      if not isinstance(json_data[2]['group'][i]['shrinked'], bool): return False
+      if len(json_data[2]['group'][i]['type']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[2]['group'][i]['type'])):
+        if json_version=='base':
+          if modifications_type_keys_base!=list(json_data[2]['group'][i]['type'][j].keys()): return False
+        if json_version=='baseSimple':
+          if modifications_type_keys_baseSimple!=list(json_data[2]['group'][i]['type'][j].keys()): return False
+        #json_data[2]['group'][i]['type'][j]['name'] can be whatever
+        if json_version=='base':
+          if len(json_data[2]['group'][i]['type'][j]['components'])!=10: return False
+          if json_data[2]['group'][i]['type'][j]['numComponents']<0 or json_data[2]['group'][i]['type'][j]['numComponents']>9: return False
+          if len(json_data[2]['group'][i]['type'][j]['pre'])!=20: return False
+          for cid in json_data[2]['group'][i]['type'][j]['pre']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+          if len(json_data[2]['group'][i]['type'][j]['post'])!=20: return False
+          for cid in json_data[2]['group'][i]['type'][j]['post']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+        if json_version=='baseSimple':
+          if len(json_data[2]['group'][i]['type'][j]['images'])!=20: return False
+          for cid in json_data[2]['group'][i]['type'][j]['images']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+        #json_data[2]['group'][i]['type'][j]['comments'] can be whatever
+        if not isinstance(json_data[2]['group'][i]['type'][j]['shrinked'], bool): return False  
   except Exception as e:
     print(f"Error checking modifications in JSON: {e}")
     return False
   
   try:  
-    for i in range(len(json_data[3]['defects'])): #si defects no existe salta la excepcion, si defects = [](correcto tambien) pues no hace el loop
-      if defects_group_keys!=list(json_data[3]['defects'][i].keys()): return False
-      if json_data[3]['defects'][i]['date']!='' and not datetime.strptime(json_data[3]['defects'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
-      if not re.fullmatch(r'\d*', json_data[3]['defects'][i]['kilometers'][0]): return False
-      if json_data[3]['defects'][i]['kilometers'][1]!='km' and json_data[3]['defects'][i]['kilometers'][1]!='mi': return False
-      #json_data[3]['defects'][i]['cause'] can be whatever
-      if not isinstance(json_data[3]['defects'][i]['shrinked'], bool): return False
-      if len(json_data[3]['defects'][i]['type']) == 0: return False #siempre habra un type como minimo
-      for j in range(len(json_data[3]['defects'][i]['type'])):
-        if defects_type_keys!=list(json_data[3]['defects'][i]['type'][j].keys()): return False
+    for i in range(len(json_data[3]['group'])): #si defects no existe salta la excepcion, si defects = [](correcto tambien) pues no hace el loop
+      if defects_group_keys!=list(json_data[3]['group'][i].keys()): return False
+      if json_data[3]['group'][i]['date']!='' and not datetime.strptime(json_data[3]['group'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if not re.fullmatch(r'\d*', json_data[3]['group'][i]['kilometers'][0]): return False
+      if json_data[3]['group'][i]['kilometers'][1]!='km' and json_data[3]['group'][i]['kilometers'][1]!='mi': return False
+      #json_data[3]['group'][i]['cause'] can be whatever
+      if not isinstance(json_data[3]['group'][i]['shrinked'], bool): return False
+      if len(json_data[3]['group'][i]['type']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[3]['group'][i]['type'])):
+        if defects_type_keys!=list(json_data[3]['group'][i]['type'][j].keys()): return False
         with urllib.request.urlopen(url_lists+'defectLevel') as levels:
           data=json.loads(levels.read())
           data.append('DataSVL.Forms.level')
-          if not json_data[3]['defects'][i]['type'][j]['level'] in data: return False
-        if len(json_data[3]['defects'][i]['type'][j]['photographs'])!=20: return False
-        for cid in json_data[3]['defects'][i]['type'][j]['photographs']:
+          if not json_data[3]['group'][i]['type'][j]['level'] in data: return False
+        if len(json_data[3]['group'][i]['type'][j]['images'])!=20: return False
+        for cid in json_data[3]['group'][i]['type'][j]['images']:
           if cid!='':
             with urllib.request.urlopen(url_ipfs+cid) as image:
               image.getcode()
-        #json_data[3]['defects'][i]['type'][j]['description'] can be whatever
-        if not isinstance(json_data[3]['defects'][i]['type'][j]['shrinked'], bool): return False
+        #json_data[3]['group'][i]['type'][j]['description'] can be whatever
+        if not isinstance(json_data[3]['group'][i]['type'][j]['shrinked'], bool): return False
   except Exception as e:
     print(f"Error checking defects in JSON: {e}")
     return False
     
   try:  
-    for i in range(len(json_data[4]['repairs'])): #si repairs no existe salta la excepcion, si repairs = [](correcto tambien) pues no hace el loop
-      if repairs_group_keys!=list(json_data[4]['repairs'][i].keys()): return False
-      if json_data[4]['repairs'][i]['date']!='' and not datetime.strptime(json_data[4]['repairs'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
-      if not re.fullmatch(r'\d*', json_data[4]['repairs'][i]['kilometers'][0]): return False
-      if json_data[4]['repairs'][i]['kilometers'][1]!='km' and json_data[4]['repairs'][i]['kilometers'][1]!='mi': return False
-      #json_data[4]['repairs'][i]['name'] can be whatever
-      if len(json_data[4]['repairs'][i]['responsible'])!=4: return False
-      if ((json_data[4]['repairs'][i]['responsible'][0]==None) or (json_data[4]['repairs'][i]['responsible'][2]==None and (json_data[4]['repairs'][i]['responsible'][0]==0 or json_data[4]['repairs'][i]['responsible'][0]==2))): return False
-      if json_data[4]['repairs'][i]['responsible'][2]==True and json_data[4]['repairs'][i]['responsible'][3]!='':
-        with urllib.request.urlopen(url_ipfs+json_data[4]['repairs'][i]['responsible'][3]) as image:
+    for i in range(len(json_data[4]['group'])): #si repairs no existe salta la excepcion, si repairs = [](correcto tambien) pues no hace el loop
+      if json_version=='base':
+        if repairs_group_keys_base!=list(json_data[4]['group'][i].keys()): return False
+      if json_version=='baseSimple':
+        if repairs_group_keys_baseSimple!=list(json_data[4]['group'][i].keys()): return False
+      if json_data[4]['group'][i]['date']!='' and not datetime.strptime(json_data[4]['group'][i]['date'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
+      if not re.fullmatch(r'\d*', json_data[4]['group'][i]['kilometers'][0]): return False
+      if json_data[4]['group'][i]['kilometers'][1]!='km' and json_data[4]['group'][i]['kilometers'][1]!='mi': return False
+      #json_data[4]['group'][i]['name'] can be whatever
+      if len(json_data[4]['group'][i]['responsible'])!=4: return False
+      if ((json_data[4]['group'][i]['responsible'][0]==None) or (json_data[4]['group'][i]['responsible'][2]==None and (json_data[4]['group'][i]['responsible'][0]==0 or json_data[4]['group'][i]['responsible'][0]==2))): return False
+      if json_data[4]['group'][i]['responsible'][2]==True and json_data[4]['group'][i]['responsible'][3]!='':
+        with urllib.request.urlopen(url_ipfs+json_data[4]['group'][i]['responsible'][3]) as image:
           image.getcode()
-      if len(json_data[4]['repairs'][i]['pre'])!=20: return False
-      for cid in json_data[4]['repairs'][i]['pre']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-      if len(json_data[4]['repairs'][i]['post'])!=20: return False
-      for cid in json_data[4]['repairs'][i]['post']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-      if len(json_data[4]['repairs'][i]['defectsRepaired'])!=10: return False
+      if json_version=='base':
+        if len(json_data[4]['group'][i]['pre'])!=20: return False
+        for cid in json_data[4]['group'][i]['pre']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+        if len(json_data[4]['group'][i]['post'])!=20: return False
+        for cid in json_data[4]['group'][i]['post']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+      if json_version=='baseSimple':
+        if len(json_data[4]['group'][i]['images'])!=20: return False
+        for cid in json_data[4]['group'][i]['images']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+      if len(json_data[4]['group'][i]['defectsRepaired'])!=10: return False
       num_defectsRepaired=0
-      for defectRepaired in json_data[4]['repairs'][i]['defectsRepaired']: 
+      for defectRepaired in json_data[4]['group'][i]['defectsRepaired']: 
         if defectRepaired[0]!=-1 and defectRepaired[1]!=-1 and defectRepaired[2]!=-1: num_defectsRepaired+=1
-      if num_defectsRepaired!=json_data[4]['repairs'][i]['numDefectsRepaired']: return False #primero miro si coincide el numero de defects repaired completados
+      if num_defectsRepaired!=json_data[4]['group'][i]['numDefectsRepaired']: return False #primero miro si coincide el numero de defects repaired completados
       for l in range(num_defectsRepaired): #luego miro que estan en las primeras posiciones(de 0 a num_defectsRepaired)
-        if json_data[4]['repairs'][i]['defectsRepaired'][l][0]==-1 or json_data[4]['repairs'][i]['defectsRepaired'][l][1]==-1 or json_data[4]['repairs'][i]['defectsRepaired'][l][2]==-1: return False
-      if not isinstance(json_data[4]['repairs'][i]['shrinked'], bool): return False
-      if len(json_data[4]['repairs'][i]['type']) == 0: return False #siempre habra un type como minimo
-      for j in range(len(json_data[4]['repairs'][i]['type'])):
-        if repairs_type_keys!=list(json_data[4]['repairs'][i]['type'][j].keys()): return False
-        #json_data[4]['repairs'][i]['type'][j]['name'] can be whatever
-        if len(json_data[4]['repairs'][i]['type'][j]['components'])!=10: return False
-        if json_data[4]['repairs'][i]['type'][j]['numComponents']<0 or json_data[4]['repairs'][i]['type'][j]['numComponents']>9: return False
-        if len(json_data[4]['repairs'][i]['type'][j]['pre'])!=20: return False
-        for cid in json_data[4]['repairs'][i]['type'][j]['pre']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-        if len(json_data[4]['repairs'][i]['type'][j]['post'])!=20: return False
-        for cid in json_data[4]['repairs'][i]['type'][j]['post']:
-          if cid!='':
-            with urllib.request.urlopen(url_ipfs+cid) as image:
-              image.getcode()
-        #json_data[4]['repairs'][i]['type'][j]['comments'] can be whatever
-        if not isinstance(json_data[4]['repairs'][i]['type'][j]['shrinked'], bool): return False
+        if json_data[4]['group'][i]['defectsRepaired'][l][0]==-1 or json_data[4]['group'][i]['defectsRepaired'][l][1]==-1 or json_data[4]['group'][i]['defectsRepaired'][l][2]==-1: return False
+      if not isinstance(json_data[4]['group'][i]['shrinked'], bool): return False
+      if len(json_data[4]['group'][i]['type']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[4]['group'][i]['type'])):
+        if json_version=='base':
+          if repairs_type_keys_base!=list(json_data[4]['group'][i]['type'][j].keys()): return False
+        if json_version=='baseSimple':
+          if repairs_type_keys_baseSimple!=list(json_data[4]['group'][i]['type'][j].keys()): return False
+        #json_data[4]['group'][i]['type'][j]['name'] can be whatever
+        if json_version=='base':
+          if len(json_data[4]['group'][i]['type'][j]['components'])!=10: return False
+          if json_data[4]['group'][i]['type'][j]['numComponents']<0 or json_data[4]['group'][i]['type'][j]['numComponents']>9: return False
+          if len(json_data[4]['group'][i]['type'][j]['pre'])!=20: return False
+          for cid in json_data[4]['group'][i]['type'][j]['pre']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+          if len(json_data[4]['group'][i]['type'][j]['post'])!=20: return False
+          for cid in json_data[4]['group'][i]['type'][j]['post']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+        if json_version=='baseSimple':
+          if len(json_data[4]['group'][i]['type'][j]['images'])!=20: return False
+          for cid in json_data[4]['group'][i]['type'][j]['images']:
+            if cid!='':
+              with urllib.request.urlopen(url_ipfs+cid) as image:
+                image.getcode()
+        #json_data[4]['group'][i]['type'][j]['comments'] can be whatever
+        if not isinstance(json_data[4]['group'][i]['type'][j]['shrinked'], bool): return False
   except Exception as e:
     print(f"Error checking repairs in JSON: {e}")
     return False
@@ -313,16 +384,16 @@ async def on_change(
                   with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
                     json_data=json.load(gz_file)
                   if check_json(json_data):
-                    num_maintenances+=len(json_data[1]['maintenances'])
-                    num_modifications+=len(json_data[2]['modifications'])
-                    for i in range(len(json_data[3]['defects'])):
-                      for j in range(len(json_data[3]['defects'][i]['type'])):
-                        if json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
-                        elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
-                        elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
-                        elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
-                        elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
-                    num_repairs+=len(json_data[4]['repairs'])
+                    num_maintenances+=len(json_data[1]['group'])
+                    num_modifications+=len(json_data[2]['group'])
+                    for i in range(len(json_data[3]['group'])):
+                      for j in range(len(json_data[3]['group'][i]['type'])):
+                        if json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
+                        elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
+                        elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
+                        elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
+                        elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
+                    num_repairs+=len(json_data[4]['group'])
                   else:
                     ctx.logger.info(f"JSON not valid {cid}")
                     svl_valid=False
@@ -345,16 +416,16 @@ async def on_change(
             with gzip.GzipFile(fileobj=BytesIO(response)) as gz_file:
               json_data=json.load(gz_file)
             if check_json(json_data):
-              num_maintenances+=len(json_data[1]['maintenances'])
-              num_modifications+=len(json_data[2]['modifications'])
-              for i in range(len(json_data[3]['defects'])):
-                for j in range(len(json_data[3]['defects'][i]['type'])):
-                  if json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
-                  elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
-                  elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
-                  elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
-                  elif json_data[3]['defects'][i]['type'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
-              num_repairs+=len(json_data[4]['repairs'])
+              num_maintenances+=len(json_data[1]['group'])
+              num_modifications+=len(json_data[2]['group'])
+              for i in range(len(json_data[3]['group'])):
+                for j in range(len(json_data[3]['group'][i]['type'])):
+                  if json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
+                  elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
+                  elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
+                  elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
+                  elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
+              num_repairs+=len(json_data[4]['group'])
             else:
               ctx.logger.info(f"JSON not valid {cid}")
               svl_valid=False
