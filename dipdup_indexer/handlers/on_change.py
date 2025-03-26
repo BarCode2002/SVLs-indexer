@@ -20,7 +20,7 @@ def check_json(json_data):
   
   json_version=json_data[5]['version']
 
-  general_information_keys=['VIN', 'brand', 'model', 'year', 'transferDate', 'kilometers', 'mainPhotograph', 'state', 'photographs', 'weight', 'color', 'engine', 'power', 'shift', 'fuel', 'autonomy', 'climate', 'usage', 'storage', 'comments']
+  general_information_keys=['VIN', 'brand', 'model', 'year', 'transferDate', 'kilometers', 'state', 'images', 'weight', 'color', 'engine', 'power', 'shift', 'fuel', 'autonomy', 'climate', 'usage', 'storage', 'comments']
   
   maintenances_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
   maintenances_type_keys_base=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
@@ -58,14 +58,12 @@ def check_json(json_data):
     if not re.fullmatch(r'\d*', json_data[0]['kilometers'][0]): return False
     if json_data[0]['kilometers'][1]!='km' and json_data[0]['kilometers'][1]!='mi': return False
     if not datetime.strptime(json_data[0]['transferDate'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
-    with urllib.request.urlopen(url_ipfs+json_data[0]['mainPhotograph']) as image:
-      image.getcode()
     with urllib.request.urlopen(url_lists+'state') as states:
       data=json.loads(states.read())
       data.append('DataSVL.Forms.state')
       if not json_data[0]['state'] in data: return False
-    if len(json_data[0]['photographs']) != 20: return False
-    for cid in json_data[0]['photographs']:
+    if len(json_data[0]['images']) != 20: return False
+    for cid in json_data[0]['images']:
       if cid!='':
         with urllib.request.urlopen(url_ipfs+cid) as image:
           image.getcode()
