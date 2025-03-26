@@ -101,7 +101,7 @@ def check_json(json_data):
     return False
     
   try:
-    for i in range(len(json_data[1])): #si maintenances no existe salta la excepcion, si maintenances = [](correcto tambien) pues no hace el loo
+    for i in range(len(json_data[1]['group'])): #si maintenances no existe salta la excepcion, si maintenances = [](correcto tambien) pues no hace el loo
       if json_version=='base':
         if maintenances_group_keys_base!=list(json_data[1]['group'][i].keys()): return False
       if json_version=='baseSimple':
