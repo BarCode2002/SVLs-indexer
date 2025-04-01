@@ -40,12 +40,12 @@ def check_json(json_data):
   repairs_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'defectsRepaired', 'numDefectsRepaired', 'element', 'shrinked']
   repairs_type_keys_baseSimple=['name', 'images', 'comments', 'shrinked']
   
-  url_lists='http://127.0.0.1:3000/mongo/lists?type='
-  url_models='http://127.0.0.1:3000/mongo/models?brand='
-  url_ipfs='http://127.0.0.1:8080/ipfs/'
-  # url_lists='http://host.docker.internal:3000/mongo/lists?type='#poner api-svc y ale
-  # url_models='http://host.docker.internal:3000/mongo/models?brand='
-  # url_ipfs='http://host.docker.internal:8080/ipfs/'
+  # url_lists='http://127.0.0.1:3000/mongo/lists?type='
+  # url_models='http://127.0.0.1:3000/mongo/models?brand='
+  # url_ipfs='http://127.0.0.1:8080/ipfs/'
+  url_lists='http://host.docker.internal:3000/mongo/lists?type='#poner api-svc y ale
+  url_models='http://host.docker.internal:3000/mongo/models?brand='
+  url_ipfs='http://host.docker.internal:8080/ipfs/'
   
   try:
     if general_information_keys!=list(json_data[0].keys()): return False
