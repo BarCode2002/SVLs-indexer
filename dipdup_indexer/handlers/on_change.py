@@ -22,28 +22,28 @@ def check_json(json_data):
 
   general_information_keys=['VIN', 'brand', 'model', 'year', 'transferDate', 'kilometers', 'state', 'images', 'weight', 'color', 'engine', 'power', 'shift', 'fuel', 'autonomy', 'climate', 'usage', 'storage', 'comments']
   
-  maintenances_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
+  maintenances_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'element', 'shrinked']
   maintenances_type_keys_base=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
-  maintenances_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'type', 'shrinked']
+  maintenances_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'element', 'shrinked']
   maintenances_type_keys_baseSimple=['name', 'images', 'comments', 'shrinked']
   
-  modifications_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'type', 'shrinked']
+  modifications_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'element', 'shrinked']
   modifications_type_keys_base=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
-  modifications_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'type', 'shrinked']
+  modifications_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'element', 'shrinked']
   modifications_type_keys_baseSimple=['name', 'images', 'comments', 'shrinked']
   
-  defects_group_keys=['date', 'kilometers', 'cause', 'type', 'shrinked']
+  defects_group_keys=['date', 'kilometers', 'cause', 'element', 'shrinked']
   defects_type_keys=['level', 'images', 'description', 'shrinked']
   
-  repairs_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'defectsRepaired', 'numDefectsRepaired', 'type', 'shrinked']
+  repairs_group_keys_base=['date', 'kilometers', 'name', 'responsible', 'pre', 'post', 'defectsRepaired', 'numDefectsRepaired', 'element', 'shrinked']
   repairs_type_keys_base=['name', 'components', 'numComponents', 'pre', 'post', 'comments', 'shrinked']
-  repairs_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'defectsRepaired', 'numDefectsRepaired', 'type', 'shrinked']
+  repairs_group_keys_baseSimple=['date', 'kilometers', 'name', 'responsible', 'images', 'defectsRepaired', 'numDefectsRepaired', 'element', 'shrinked']
   repairs_type_keys_baseSimple=['name', 'images', 'comments', 'shrinked']
   
   # url_lists='http://127.0.0.1:3000/mongo/lists?type='
   # url_models='http://127.0.0.1:3000/mongo/models?brand='
   # url_ipfs='http://127.0.0.1:8080/ipfs/'
-  url_lists='http://host.docker.internal:3000/mongo/lists?type='
+  url_lists='http://host.docker.internal:3000/mongo/lists?type='#poner api-svc y ale
   url_models='http://host.docker.internal:3000/mongo/models?brand='
   url_ipfs='http://host.docker.internal:8080/ipfs/'
   
@@ -133,34 +133,34 @@ def check_json(json_data):
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
       if not isinstance(json_data[1]['group'][i]['shrinked'], bool): return False
-      if len(json_data[1]['group'][i]['type']) == 0: return False #siempre habra un type como minimo
-      for j in range(len(json_data[1]['group'][i]['type'])):
+      if len(json_data[1]['group'][i]['element']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[1]['group'][i]['element'])):
         if json_version=='base':
-          if maintenances_type_keys_base!=list(json_data[1]['group'][i]['type'][j].keys()): return False
+          if maintenances_type_keys_base!=list(json_data[1]['group'][i]['element'][j].keys()): return False
         if json_version=='baseSimple':
-          if maintenances_type_keys_baseSimple!=list(json_data[1]['group'][i]['type'][j].keys()): return False
-        #json_data[1]['group'][i]['type'][j]['name'] can be whatever
+          if maintenances_type_keys_baseSimple!=list(json_data[1]['group'][i]['element'][j].keys()): return False
+        #json_data[1]['group'][i]['element'][j]['name'] can be whatever
         if json_version=='base':
-          if len(json_data[1]['group'][i]['type'][j]['components'])!=10: return False
-          if json_data[1]['group'][i]['type'][j]['numComponents']<0 or json_data[1]['group'][i]['type'][j]['numComponents']>9: return False
-          if len(json_data[1]['group'][i]['type'][j]['pre'])!=20: return False
-          for cid in json_data[1]['group'][i]['type'][j]['pre']:
+          if len(json_data[1]['group'][i]['element'][j]['components'])!=10: return False
+          if json_data[1]['group'][i]['element'][j]['numComponents']<0 or json_data[1]['group'][i]['element'][j]['numComponents']>9: return False
+          if len(json_data[1]['group'][i]['element'][j]['pre'])!=20: return False
+          for cid in json_data[1]['group'][i]['element'][j]['pre']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
-          if len(json_data[1]['group'][i]['type'][j]['post'])!=20: return False
-          for cid in json_data[1]['group'][i]['type'][j]['post']:
+          if len(json_data[1]['group'][i]['element'][j]['post'])!=20: return False
+          for cid in json_data[1]['group'][i]['element'][j]['post']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
         if json_version=='baseSimple':
-          if len(json_data[1]['group'][i]['type'][j]['images'])!=20: return False
-          for cid in json_data[1]['group'][i]['type'][j]['images']:
+          if len(json_data[1]['group'][i]['element'][j]['images'])!=20: return False
+          for cid in json_data[1]['group'][i]['element'][j]['images']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
-        #json_data[1]['group'][i]['type'][j]['comments'] can be whatever
-        if not isinstance(json_data[1]['group'][i]['type'][j]['shrinked'], bool): return False
+        #json_data[1]['group'][i]['element'][j]['comments'] can be whatever
+        if not isinstance(json_data[1]['group'][i]['element'][j]['shrinked'], bool): return False
   except Exception as e:
     print(f"Error checking maintenances in JSON: {e}")
     return False
@@ -198,34 +198,34 @@ def check_json(json_data):
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
       if not isinstance(json_data[2]['group'][i]['shrinked'], bool): return False
-      if len(json_data[2]['group'][i]['type']) == 0: return False #siempre habra un type como minimo
-      for j in range(len(json_data[2]['group'][i]['type'])):
+      if len(json_data[2]['group'][i]['element']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[2]['group'][i]['element'])):
         if json_version=='base':
-          if modifications_type_keys_base!=list(json_data[2]['group'][i]['type'][j].keys()): return False
+          if modifications_type_keys_base!=list(json_data[2]['group'][i]['element'][j].keys()): return False
         if json_version=='baseSimple':
-          if modifications_type_keys_baseSimple!=list(json_data[2]['group'][i]['type'][j].keys()): return False
-        #json_data[2]['group'][i]['type'][j]['name'] can be whatever
+          if modifications_type_keys_baseSimple!=list(json_data[2]['group'][i]['element'][j].keys()): return False
+        #json_data[2]['group'][i]['element'][j]['name'] can be whatever
         if json_version=='base':
-          if len(json_data[2]['group'][i]['type'][j]['components'])!=10: return False
-          if json_data[2]['group'][i]['type'][j]['numComponents']<0 or json_data[2]['group'][i]['type'][j]['numComponents']>9: return False
-          if len(json_data[2]['group'][i]['type'][j]['pre'])!=20: return False
-          for cid in json_data[2]['group'][i]['type'][j]['pre']:
+          if len(json_data[2]['group'][i]['element'][j]['components'])!=10: return False
+          if json_data[2]['group'][i]['element'][j]['numComponents']<0 or json_data[2]['group'][i]['element'][j]['numComponents']>9: return False
+          if len(json_data[2]['group'][i]['element'][j]['pre'])!=20: return False
+          for cid in json_data[2]['group'][i]['element'][j]['pre']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
-          if len(json_data[2]['group'][i]['type'][j]['post'])!=20: return False
-          for cid in json_data[2]['group'][i]['type'][j]['post']:
+          if len(json_data[2]['group'][i]['element'][j]['post'])!=20: return False
+          for cid in json_data[2]['group'][i]['element'][j]['post']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
         if json_version=='baseSimple':
-          if len(json_data[2]['group'][i]['type'][j]['images'])!=20: return False
-          for cid in json_data[2]['group'][i]['type'][j]['images']:
+          if len(json_data[2]['group'][i]['element'][j]['images'])!=20: return False
+          for cid in json_data[2]['group'][i]['element'][j]['images']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
-        #json_data[2]['group'][i]['type'][j]['comments'] can be whatever
-        if not isinstance(json_data[2]['group'][i]['type'][j]['shrinked'], bool): return False  
+        #json_data[2]['group'][i]['element'][j]['comments'] can be whatever
+        if not isinstance(json_data[2]['group'][i]['element'][j]['shrinked'], bool): return False  
   except Exception as e:
     print(f"Error checking modifications in JSON: {e}")
     return False
@@ -238,20 +238,20 @@ def check_json(json_data):
       if json_data[3]['group'][i]['kilometers'][1]!='km' and json_data[3]['group'][i]['kilometers'][1]!='mi': return False
       #json_data[3]['group'][i]['cause'] can be whatever
       if not isinstance(json_data[3]['group'][i]['shrinked'], bool): return False
-      if len(json_data[3]['group'][i]['type']) == 0: return False #siempre habra un type como minimo
-      for j in range(len(json_data[3]['group'][i]['type'])):
-        if defects_type_keys!=list(json_data[3]['group'][i]['type'][j].keys()): return False
+      if len(json_data[3]['group'][i]['element']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[3]['group'][i]['element'])):
+        if defects_type_keys!=list(json_data[3]['group'][i]['element'][j].keys()): return False
         with urllib.request.urlopen(url_lists+'defectLevel') as levels:
           data=json.loads(levels.read())
           data.append('DataSVL.Forms.level')
-          if not json_data[3]['group'][i]['type'][j]['level'] in data: return False
-        if len(json_data[3]['group'][i]['type'][j]['images'])!=20: return False
-        for cid in json_data[3]['group'][i]['type'][j]['images']:
+          if not json_data[3]['group'][i]['element'][j]['level'] in data: return False
+        if len(json_data[3]['group'][i]['element'][j]['images'])!=20: return False
+        for cid in json_data[3]['group'][i]['element'][j]['images']:
           if cid!='':
             with urllib.request.urlopen(url_ipfs+cid) as image:
               image.getcode()
-        #json_data[3]['group'][i]['type'][j]['description'] can be whatever
-        if not isinstance(json_data[3]['group'][i]['type'][j]['shrinked'], bool): return False
+        #json_data[3]['group'][i]['element'][j]['description'] can be whatever
+        if not isinstance(json_data[3]['group'][i]['element'][j]['shrinked'], bool): return False
   except Exception as e:
     print(f"Error checking defects in JSON: {e}")
     return False
@@ -296,34 +296,34 @@ def check_json(json_data):
       for l in range(num_defectsRepaired): #luego miro que estan en las primeras posiciones(de 0 a num_defectsRepaired)
         if json_data[4]['group'][i]['defectsRepaired'][l][0]==-1 or json_data[4]['group'][i]['defectsRepaired'][l][1]==-1 or json_data[4]['group'][i]['defectsRepaired'][l][2]==-1: return False
       if not isinstance(json_data[4]['group'][i]['shrinked'], bool): return False
-      if len(json_data[4]['group'][i]['type']) == 0: return False #siempre habra un type como minimo
-      for j in range(len(json_data[4]['group'][i]['type'])):
+      if len(json_data[4]['group'][i]['element']) == 0: return False #siempre habra un type como minimo
+      for j in range(len(json_data[4]['group'][i]['element'])):
         if json_version=='base':
-          if repairs_type_keys_base!=list(json_data[4]['group'][i]['type'][j].keys()): return False
+          if repairs_type_keys_base!=list(json_data[4]['group'][i]['element'][j].keys()): return False
         if json_version=='baseSimple':
-          if repairs_type_keys_baseSimple!=list(json_data[4]['group'][i]['type'][j].keys()): return False
-        #json_data[4]['group'][i]['type'][j]['name'] can be whatever
+          if repairs_type_keys_baseSimple!=list(json_data[4]['group'][i]['element'][j].keys()): return False
+        #json_data[4]['group'][i]['element'][j]['name'] can be whatever
         if json_version=='base':
-          if len(json_data[4]['group'][i]['type'][j]['components'])!=10: return False
-          if json_data[4]['group'][i]['type'][j]['numComponents']<0 or json_data[4]['group'][i]['type'][j]['numComponents']>9: return False
-          if len(json_data[4]['group'][i]['type'][j]['pre'])!=20: return False
-          for cid in json_data[4]['group'][i]['type'][j]['pre']:
+          if len(json_data[4]['group'][i]['element'][j]['components'])!=10: return False
+          if json_data[4]['group'][i]['element'][j]['numComponents']<0 or json_data[4]['group'][i]['element'][j]['numComponents']>9: return False
+          if len(json_data[4]['group'][i]['element'][j]['pre'])!=20: return False
+          for cid in json_data[4]['group'][i]['element'][j]['pre']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
-          if len(json_data[4]['group'][i]['type'][j]['post'])!=20: return False
-          for cid in json_data[4]['group'][i]['type'][j]['post']:
+          if len(json_data[4]['group'][i]['element'][j]['post'])!=20: return False
+          for cid in json_data[4]['group'][i]['element'][j]['post']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
         if json_version=='baseSimple':
-          if len(json_data[4]['group'][i]['type'][j]['images'])!=20: return False
-          for cid in json_data[4]['group'][i]['type'][j]['images']:
+          if len(json_data[4]['group'][i]['element'][j]['images'])!=20: return False
+          for cid in json_data[4]['group'][i]['element'][j]['images']:
             if cid!='':
               with urllib.request.urlopen(url_ipfs+cid) as image:
                 image.getcode()
-        #json_data[4]['group'][i]['type'][j]['comments'] can be whatever
-        if not isinstance(json_data[4]['group'][i]['type'][j]['shrinked'], bool): return False
+        #json_data[4]['group'][i]['element'][j]['comments'] can be whatever
+        if not isinstance(json_data[4]['group'][i]['element'][j]['shrinked'], bool): return False
   except Exception as e:
     print(f"Error checking repairs in JSON: {e}")
     return False
@@ -387,12 +387,12 @@ async def on_change(
                     num_maintenances+=len(json_data[1]['group'])
                     num_modifications+=len(json_data[2]['group'])
                     for i in range(len(json_data[3]['group'])):
-                      for j in range(len(json_data[3]['group'][i]['type'])):
-                        if json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
-                        elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
-                        elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
-                        elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
-                        elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
+                      for j in range(len(json_data[3]['group'][i]['element'])):
+                        if json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
+                        elif json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
+                        elif json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
+                        elif json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
+                        elif json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
                     num_repairs+=len(json_data[4]['group'])
                   else:
                     ctx.logger.info(f"JSON not valid {cid}")
@@ -419,12 +419,12 @@ async def on_change(
               num_maintenances+=len(json_data[1]['group'])
               num_modifications+=len(json_data[2]['group'])
               for i in range(len(json_data[3]['group'])):
-                for j in range(len(json_data[3]['group'][i]['type'])):
-                  if json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
-                  elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
-                  elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
-                  elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
-                  elif json_data[3]['group'][i]['type'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
+                for j in range(len(json_data[3]['group'][i]['element'])):
+                  if json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.cosmetic': num_cosmetic_defects+=1
+                  elif json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.minor': num_minor_defects+=1
+                  elif json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.moderate': num_moderate_defects+=1
+                  elif json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.important': num_important_defects+=1
+                  elif json_data[3]['group'][i]['element'][j]['level']=='Lists.DefectLevel.critical': num_critical_defects+=1
               num_repairs+=len(json_data[4]['group'])
             else:
               ctx.logger.info(f"JSON not valid {cid}")
