@@ -60,6 +60,7 @@ def check_json(json_data):
     if not datetime.strptime(json_data[0]['transferDate'], "%Y-%m-%dT%H:%M:%S.%fZ"): return False
     with urllib.request.urlopen(url_lists+'state') as states:
       data=json.loads(states.read())
+      data.append('')
       if not json_data[0]['state'] in data: return False
     if len(json_data[0]['images']) != 20: return False
     for cid in json_data[0]['images']:
@@ -74,22 +75,27 @@ def check_json(json_data):
     if json_data[0]['power'][1]!='cv' and json_data[0]['power'][1]!='kW': return False
     with urllib.request.urlopen(url_lists+'shift') as shifts:
       data=json.loads(shifts.read())
+      data.append('')
       if not json_data[0]['shift'] in data: return False
     with urllib.request.urlopen(url_lists+'fuel') as fuels:
       data=json.loads(fuels.read())
+      data.append('')
       if not json_data[0]['fuel'] in data: return False
     if not re.fullmatch(r'\d*', json_data[0]['autonomy'][0]): return False
     if json_data[0]['autonomy'][1]!='km' and json_data[0]['autonomy'][1]!='mi': return False
     with urllib.request.urlopen(url_lists+'climate') as climates:
       data=json.loads(climates.read())
+      data.append('')
       if not json_data[0]['climate'] in data: return False
     with urllib.request.urlopen(url_lists+'usage') as usages:
       data=json.loads(usages.read())
+      data.append('')
       if not json_data[0]['usage'] in data: return False
     with urllib.request.urlopen(url_lists+'storage') as storages:
       data=json.loads(storages.read())
+      data.append('')
       if not json_data[0]['storage'] in data: return False
-    #json_data[0]['comments']) can be whatever
+    #json_data[0]['comments'] can be whatever
   except Exception as e:
     print(f"Error checking general information in JSON: {e}")
     return False
@@ -237,6 +243,7 @@ def check_json(json_data):
         if defects_type_keys!=list(json_data[3]['group'][i]['element'][j].keys()): return False
         with urllib.request.urlopen(url_lists+'defectLevel') as levels:
           data=json.loads(levels.read())
+          data.append('')
           if not json_data[3]['group'][i]['element'][j]['level'] in data: return False
         if len(json_data[3]['group'][i]['element'][j]['images'])!=20: return False
         for cid in json_data[3]['group'][i]['element'][j]['images']:
